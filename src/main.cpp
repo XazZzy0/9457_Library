@@ -89,8 +89,8 @@ class botOdom {
       update_hz(50) 
       {} 
     
-    // CASE 2 - 1 DW (parallel to wheelbase), 1 IMU
-    botOdom( double offsetV ) : 
+    // CASE 2 - 1 DW (perp/parallel), 1 IMU -> bool is true if DW is perpendicular to Wheelbase, else false if parallel
+    botOdom( bool wheelPerp ) : 
       xG(0), yG(0), tG(0),
       update_hz(50) 
       {} 
@@ -116,13 +116,13 @@ class botOdom {
     angle            -> IMU Reading 0-360
     */
     void update ( double vWheel, double hWheel, double angle, double vWheel_Diameter = 2.75,  double hWheel_Diameter = 2.75 ) {
-      tdot = (tPrev - angle)*(3.14159/180);   // change in heading from the previous position.  [Radians/hz]
+      tdot = (angle - tPrev)*(3.14159/180);   // change in heading from the previous position.  [Radians/hz]
       vdot = (vWheel - vPrev)/360;            // change in the x location from the previous position. [rot/hz]
       hdot = (hWheel - hPrev)/360;            // change in the y location from the previous position. [rot/hz]
-
-      tG += tdot;                                                                                 // update Inertial Frame [Radians]
+                                                                                // update Inertial Frame [Radians]
       xG += (vdot*cos(tG)*3.14159*vWheel_Diameter) + (hdot*sin(tG)*3.14159*hWheel_Diameter);      // update Inertial Frame [Inches]
       yG += (vdot*sin(tG)*3.14159*vWheel_Diameter) - (hdot*cos(tG)*3.14159*hWheel_Diameter);      // update Inertial Frame [Inches]
+      tG += tdot; 
 
       // update the previous positions to the current positions for the next iteration
       vPrev = vWheel; 
@@ -171,6 +171,7 @@ class botOdom {
       xG = xPose;
       yG = yPose;
       tG = tPose;
+      IMU.setRotation(tPose, degrees);
     }
 
     // How to declare the update rate of the system. CANNOT GO ABOVE 100 HZ
@@ -356,7 +357,7 @@ dTerm  -> Derivative coefficient (optional)
 void sysUpdate ( void ){
   while(true){
     // Updating the Position and heading of the robot (use custom "update" for your system)
-    botTracking.update( vDW_left.position(degrees), hDW.position(degrees), IMU.heading(degrees) ); // in this case - 1 horizontal, 1 vertical, 1 imu
+    botTracking.update( vDW_left.position(degrees), hDW.position(degrees), IMU.rotation(degrees) ); // in this case - 1 horizontal, 1 vertical, 1 imu
 
     // Print the position and heading of the robot for debugging purposes
     printf("X Position = [%.2f] \t Y Position = [%.2f] \t Theta Heading = [%.] \n", botTracking.xG, botTracking.yG, botTracking.tG);
@@ -368,7 +369,9 @@ void sysUpdate ( void ){
 
 // Pre-autonomous intial setups
 void pre_auton ( void ){
-
+  IMU.calibrate(2);     // Remember to calibrate your IMU
+  vDW.resetPosition();  // Set encoders to zero
+  hDW.resetPosition();  // Set encoders to zero
 }
 
 void userControl( void ) {
@@ -378,7 +381,7 @@ void userControl( void ) {
 }
 
 void autoControl( void ) {
-  botTracking.setPose(0, 0, 0); 
+  botTracking.setPose(0, 0, 0); // Sets the current location plus heading of the robot
 }
 
 int main() {
