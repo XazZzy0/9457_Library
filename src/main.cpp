@@ -73,9 +73,9 @@ BASIC CONTROL SYSTEM.
 */
 class botOdom {
   private:
+    double vOffset = 0, hOffset = 0;                                // Variables to represent the deadwheel offsets
     double vPrev = 0, vLPrev = 0, vRPrev = 0, hPrev =0, tPrev = 0;  // Variables to represent the previous encoder positions
     double vdot = 0, hdot = 0, tdot = 0;                            // Variables for the rotational velocity deltas, (deg/hz, deg/hz, Rad/hz) [ROBOT FRAME]
-    double vddot = 0, hddot = 0, tddot = 0;                         // Variables for the rotational acceleration deltas, (deg/hz^2, deg/hz^2, Rad/hz) [ROBOT FRAME]
 
   public:
    // creating neccessary variables for the class - updating and global/previous variables.
@@ -84,9 +84,10 @@ class botOdom {
 
     // Possible Constructors of the Odometry function
     // CASE 1 - 2 DW (perpedicular to eachother), 1 IMU
-    botOdom( void ) :  
+    botOdom( double v_Offset, double h_Offset ) :  
       xG(0), yG(0), tG(0),
-      update_hz(50) 
+      update_hz(50),
+      vOffset(v_Offset), hOffset(h_Offset) 
       {} 
     
     // CASE 2 - 1 DW (perp/parallel), 1 IMU -> bool is true if DW is perpendicular to Wheelbase, else false if parallel
@@ -96,33 +97,39 @@ class botOdom {
       {} 
 
     // CASE 3 - 3 DW, no IMU
-    botOdom( double wheelBase, double normBase ) : 
+    botOdom( double LeftOffset, double RightOffset, double RearOffset ) : 
       xG(0), yG(0), tG(0),
       update_hz(50) 
       {}  
 
-    /* --- SYSTEM UPDATE 1 FUNCTION ---
+     /* --- SYSTEM UPDATE 1 FUNCTION ---
     THIS IS HOW TO UPDATE THE ROBOT FRAME SO THAT THE X, Y, AND HEADING
     OF THE ROBOT IS ACCURATELY REPRESENTED.
 
-    ONLY USE WHEN 1 DEADWHEEL AND AN IMU ARE PRESENT, A VERTICAL ONE AND A 
+    ONLY USE WHEN 2 DEADWHEELS AND AN IMU ARE PRESENT, A VERTICAL ONE AND A 
     HORIZONTAL ONE,
 
     INPUTS:
-    vWheel           -> Vertical Deadwheel position reading
+    vWheel           -> Vertical Deadwheel position reading [degrees]
+    hWheel           -> Horizontal Deadwheel position reading [degrees]
+    angle            -> Totaled IMU Reading -Inf - Inf [degrees]
     vWheel_Diameter  -> Vertical Deadwheel Diameter (optional input)
-    hWheel           -> Horizontal Deadwheel position reading
-    hWheel_Diameter  -> Horizontal Deadwheel Diameter (optional input)
-    angle            -> IMU Reading 0-360
+    hWheel_Diameter  -> Horizontal Deadwheel Diameter (optional input) 
     */
     void update ( double vWheel, double hWheel, double angle, double vWheel_Diameter = 2.75,  double hWheel_Diameter = 2.75 ) {
-      tdot = (angle - tPrev)*(3.14159/180);   // change in heading from the previous position.  [Radians/hz]
-      vdot = (vWheel - vPrev)/360;            // change in the x location from the previous position. [rot/hz]
-      hdot = (hWheel - hPrev)/360;            // change in the y location from the previous position. [rot/hz]
-                                                                                // update Inertial Frame [Radians]
-      xG += (vdot*cos(tG)*3.14159*vWheel_Diameter) + (hdot*sin(tG)*3.14159*hWheel_Diameter);      // update Inertial Frame [Inches]
-      yG += (vdot*sin(tG)*3.14159*vWheel_Diameter) - (hdot*cos(tG)*3.14159*hWheel_Diameter);      // update Inertial Frame [Inches]
+      tdot = (angle - tPrev)*(3.14159/180);                           // change in heading from the previous position.  [Radians/hz]
+      vdot = (vWheel - vPrev)/360*3.14159*vWheel_Diameter;            // change in the x location from the previous position. [in/hz]
+      hdot = (hWheel - hPrev)/360*3.14159*vWheel_Diameter;            // change in the y location from the previous position. [in/hz]
+
+      double lx = 2*sin(tdot/2)*(hdot/tdot + hOffset);  //Local (Robot) Odometry Frame shifted by tdot/2
+      double ly = 2*sin(tdot/2)*(vdot/tdot + vOffset);  //Local (Robot) Odometry Frame shifted by tdot/2
+                                                                                
+      xG += (ly*cos(tG + tdot/2)) + (lx*sin(tG + tdot/2));     // update Inertial Frame [Inches]
+      yG += (ly*sin(tG + tdot/2)) - (lx*cos(tG + tdot/2));     // update Inertial Frame [Inches]
       tG += tdot; 
+
+      if tG > 360 { tG = 0; }
+      else if tG < 0 { tG = 360; }
 
       // update the previous positions to the current positions for the next iteration
       vPrev = vWheel; 
@@ -130,11 +137,11 @@ class botOdom {
       tPrev = angle;
     } 
 
-    /* --- SYSTEM UPDATE 2 FUNCTION ---
+   /* --- SYSTEM UPDATE 2 FUNCTION ---
     THIS IS HOW TO UPDATE THE ROBOT FRAME SO THAT THE X, Y, AND HEADING
     OF THE ROBOT IS ACCURATELY REPRESENTED.
 
-    ONLY USE WHEN 2 DEADWHEELS AND AN IMU ARE PRESENT, A VERTICAL ONE AND A 
+    ONLY USE WHEN 1 DEADWHEEL AND AN IMU ARE PRESENT, A VERTICAL ONE AND A 
     HORIZONTAL ONE,
 
     INPUTS:
