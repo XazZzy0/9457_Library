@@ -10,12 +10,29 @@ int state = 0;
 competition Competition;
 brain Brain;
 motor Motor = motor(PORT5, false);            // The motor
-rotation Rotation = rotation(PORT9, false);   // Rotation callout (for PID example)
-rotation vDW = rotation(PORT10, false);       // vertical deadwheel 
-rotation vDW_left = rotation(PORT11, false);  // vertical deadwheel (left side)
-rotation vDW_right = rotation(PORT12, false); // vertical deadwheel (right side)
-rotation hDW = rotation(PORT13, false);       // horizontal deadwheel 
-inertial IMU = inertial(PORT14);              // For the inertial unit
+motor Motorleft1 = motor(PORT6, false);       // The motor
+motor Motorleft2 = motor(PORT7, false);       // The motor
+motor Motorright1 = motor(PORT8, false);      // The motor
+motor Motorright2 = motor(PORT9, false);      // The motor
+motor_group leftSide = motor_group(Motorleft1, Motorleft2);     // leftSide
+motor_group rightSide = motor_group(Motorright1, Motorright2);  // rightSide
+
+rotation Rotation = rotation(PORT10, false);  // Rotation callout (for PID example)
+rotation vDW = rotation(PORT11, false);       // vertical deadwheel 
+rotation vDW_left = rotation(PORT12, false);  // vertical deadwheel (left side)
+rotation vDW_right = rotation(PORT13, false); // vertical deadwheel (right side)
+rotation hDW = rotation(PORT14, false);       // horizontal deadwheel 
+inertial IMU = inertial(PORT15);              // For the inertial unit
+
+/*
+ ██████╗██╗      █████╗ ███████╗███████╗███████╗███████╗
+██╔════╝██║     ██╔══██╗██╔════╝██╔════╝██╔════╝██╔════╝
+██║     ██║     ███████║███████╗███████╗█████╗  ███████╗
+██║     ██║     ██╔══██║╚════██║╚════██║██╔══╝  ╚════██║
+╚██████╗███████╗██║  ██║███████║███████║███████╗███████║
+ ╚═════╝╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚══════╝
+
+*/
 
 /* === PID Controller ===
 THIS IS A PID OBJECT, CREATE A NEW INSTANCE WHENEVER YOU WOULD LIKE A UNIQUE RESPONSE
@@ -69,7 +86,9 @@ THIS IS A ODOMETRY OBJECT, CREATE A NEW INSTANCE WHENEVER YOU WOULD LIKE A UNIQU
 MULTI-THREADING WILL NEED TO BE UTILIZED IN THE BACKGROUND IF PROPER IMPLEMENTATION IS DESIRED.
 
 THE BACK-END MATH IS BASED ON EUCLIDIAN DYNAMICS AND MAY BE PRONE TO ERROR. THIS IS FOR A 
-BASIC CONTROL SYSTEM.
+BASIC CONTROL SYSTEM AND DEALS WITH ALL THE BACKEND UPDATING IN TERMS OF TOTALS/ABSOLUTES.
+IMU.ROTATION() WILL NEED TO BE CALLED ALONG WITH MOTOR.POSITION(), INSTEAD OF IMU.HEADING()
+AND MOTOR.ANGLE().
 */
 class botOdom {
   private:
@@ -128,8 +147,8 @@ class botOdom {
       yG += (ly*sin(tG + tdot/2)) - (lx*cos(tG + tdot/2));     // update Inertial Frame [Inches]
       tG += tdot; 
 
-      if tG > 360 { tG = 0; }
-      else if tG < 0 { tG = 360; }
+      if      (tG > 360) { tG = 0; }    // checks to see if the global is outside of normal bounds (over-travel)
+      else if (tG < 0)   { tG = 360; }  // checks to see if the global is outside of normal bounds (under-travel)
 
       // update the previous positions to the current positions for the next iteration
       vPrev = vWheel; 
@@ -188,6 +207,42 @@ class botOdom {
 };
 // Creation of the Global Odometry class - so that it can be accessed everywhere
 botOdom botTracking; 
+
+/* 
+    Currently in work. Relative coordinate system.
+    working to implement motor plug-ins and more advanced manuevers.
+    Needs Odom to work as of the moment
+*/
+class controlDrive { 
+    private:
+        motor_group left;   // a motor_group containing the left side of the drivebase
+        motor_group right;  // a motor_group containing the right side of the drivebase
+        inertial IMU;       // an inertial class containing the IMU info
+
+    public:
+        controlDrive( motor_group leftGroup, motor_group rightGroup, inertial botIMU ) : 
+            left(leftGroup), right(rightGroup), IMU(botIMU)
+            {}
+
+        void driveFwd(double dist, double vel, bool waitCompletion = true) {
+
+        }
+        
+        void pointTurn(double degrees, double vel, bool waitCompletion = true) {
+
+        }
+};
+controlDrive controlBase(leftSide, rightSide, IMU);
+
+/*
+███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+█████╗  ██║   ██║██╔██╗ ██║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+██╔══╝  ██║   ██║██║╚██╗██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+
+*/
 
 // For pressing on the Brain and updating the angle state
 void pressed_function( void ){
@@ -374,6 +429,16 @@ void sysUpdate ( void ){
   }
 }
 
+/*
+██████╗  ██████╗ ██████╗  ██████╗ ████████╗     ██████╗ ██████╗ ███╗   ██╗████████╗██████╗  ██████╗ ██╗
+██╔══██╗██╔═══██╗██╔══██╗██╔═══██╗╚══██╔══╝    ██╔════╝██╔═══██╗████╗  ██║╚══██╔══╝██╔══██╗██╔═══██╗██║
+██████╔╝██║   ██║██████╔╝██║   ██║   ██║       ██║     ██║   ██║██╔██╗ ██║   ██║   ██████╔╝██║   ██║██║
+██╔══██╗██║   ██║██╔══██╗██║   ██║   ██║       ██║     ██║   ██║██║╚██╗██║   ██║   ██╔══██╗██║   ██║██║
+██║  ██║╚██████╔╝██████╔╝╚██████╔╝   ██║       ╚██████╗╚██████╔╝██║ ╚████║   ██║   ██║  ██║╚██████╔╝███████╗
+╚═╝  ╚═╝ ╚═════╝ ╚═════╝  ╚═════╝    ╚═╝        ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝
+
+*/
+
 // Pre-autonomous intial setups
 void pre_auton ( void ){
   IMU.calibrate(2);     // Remember to calibrate your IMU
@@ -390,6 +455,7 @@ void userControl( void ) {
 void autoControl( void ) {
   botTracking.setPose(0, 0, 0); // Sets the current location plus heading of the robot
 }
+
 
 int main() {
     botTracking.change_rate(50); // Set the update rate of the odometry tracking system (in Hz, or updates/sec), STD is 50.
