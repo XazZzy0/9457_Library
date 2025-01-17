@@ -10,19 +10,19 @@ int state = 0;
 competition Competition;
 brain Brain;
 motor Motor = motor(PORT5, false);            // The motor
-motor Motorleft1 = motor(PORT6, false);       // The motor
-motor Motorleft2 = motor(PORT7, false);       // The motor
-motor Motorright1 = motor(PORT8, false);      // The motor
-motor Motorright2 = motor(PORT9, false);      // The motor
+motor Motorleft1 = motor(PORT2, false);       // The motor
+motor Motorleft2 = motor(PORT2, false);       // The motor
+motor Motorright1 = motor(PORT2, false);      // The motor
+motor Motorright2 = motor(PORT2, false);      // The motor
 motor_group leftSide = motor_group(Motorleft1, Motorleft2);     // leftSide
 motor_group rightSide = motor_group(Motorright1, Motorright2);  // rightSide
 
-rotation Rotation = rotation(PORT10, false);  // Rotation callout (for PID example)
-rotation vDW = rotation(PORT11, false);       // vertical deadwheel 
-rotation vDW_left = rotation(PORT12, false);  // vertical deadwheel (left side)
-rotation vDW_right = rotation(PORT13, false); // vertical deadwheel (right side)
-rotation hDW = rotation(PORT14, false);       // horizontal deadwheel 
-inertial IMU = inertial(PORT15);              // For the inertial unit
+rotation Rotation = rotation(PORT9, false);  // Rotation callout (for PID example)
+rotation vDW = rotation(PORT2, false);       // vertical deadwheel 
+rotation vDW_left = rotation(PORT2, false);  // vertical deadwheel (left side)
+rotation vDW_right = rotation(PORT2, false); // vertical deadwheel (right side)
+rotation hDW = rotation(PORT2, false);       // horizontal deadwheel 
+inertial IMU = inertial(PORT2);              // For the inertial unit
 
 /*
  ██████╗██╗      █████╗ ███████╗███████╗███████╗███████╗
@@ -77,7 +77,7 @@ class PID {
         }
 
         void setVel(double toPower){
-          maxPower = toPower;
+          maxPower = fabs(toPower);
         }
 };
 
@@ -102,20 +102,26 @@ class botOdom {
     double xG, yG, tG; // (In, In, Rad) [INERTIAL FRAME]
 
     // Possible Constructors of the Odometry function
-    // CASE 1 - 2 DW (perpedicular to eachother), 1 IMU
+    // CASE 1 - No DW, 1 IMU
+    botOdom( void ) :  
+      xG(0), yG(0), tG(0),
+      update_hz(50)
+      {} 
+    
+    // CASE 2 - 2 DW (perpedicular to eachother), 1 IMU
     botOdom( double v_Offset, double h_Offset ) :  
       xG(0), yG(0), tG(0),
       update_hz(50),
       vOffset(v_Offset), hOffset(h_Offset) 
       {} 
     
-    // CASE 2 - 1 DW (perp/parallel), 1 IMU -> bool is true if DW is perpendicular to Wheelbase, else false if parallel
+    // CASE 3 - 1 DW (perp/parallel), 1 IMU -> bool is true if DW is perpendicular to Wheelbase, else false if parallel
     botOdom( bool wheelPerp ) : 
       xG(0), yG(0), tG(0),
       update_hz(50) 
       {} 
 
-    // CASE 3 - 3 DW, no IMU
+    // CASE 4 - 3 DW, no IMU
     botOdom( double LeftOffset, double RightOffset, double RearOffset ) : 
       xG(0), yG(0), tG(0),
       update_hz(50) 
@@ -273,7 +279,7 @@ void PIDdriver (double vel, double pTerm = 3.15, double iTerm = 0.0, double dTer
   int update_hz = 50; 
 
   // Reset the encoder to zero, gather the new manuever distance, can be positve or negative (indicates cw/ccw rotation)        
-  Rotation.resetPosition();                        // reset the position of the rotation sensor
+  Rotation.resetPosition();                        // reset the position of the rotation sensor, motor encoder, imu heading, etc...
   double currAngle = 0;                            // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running
   double error = angleSet[state] - currAngle;      // initialize error
   double toPower;                                  // initialize the speed variable
@@ -320,9 +326,9 @@ void PIDauto (double target, double vel, double pTerm = 3.15, double iTerm = 0.0
   int breakout = 0;
 
   // Reset the encoder to zero, gather the new manuever distance, can be positve or negative (indicates cw/ccw rotation)
-  Rotation.resetPosition();                          // reset the position of the rotation sensor
+  Rotation.resetPosition();                          // reset the position of the rotation sensor, motor encoder, imu heading, etc...
   double currAngle = 0;                              // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running
-  double totalError = abs(target - currAngle);       // initialize absolute total error of manuever
+  double totalError = fabs(target - currAngle);       // initialize absolute total error of manuever
   double error = target - currAngle;                 // initialize error
   double toPower;                                    // initialize the speed variable
   double pctError = error / totalError * 100;        // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
@@ -367,9 +373,9 @@ void PIDaccel (double target, double vel, double accelPeriod = 15, double minVel
   int breakout = 0;
 
   // Reset the encoder to zero, gather the new manuever distance, can be positve or negative (indicates cw/ccw rotation)
-  Rotation.resetPosition();                          // reset the position of the rotation sensor
+  Rotation.resetPosition();                          // reset the position of the rotation sensor, motor encoder, imu heading, etc...
   double currAngle = 0;                              // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running
-  double totalError = abs(target - currAngle);       // initialize absolute total error of manuever
+  double totalError = fabs(target - currAngle);       // initialize absolute total error of manuever
   double error = target - currAngle;                 // initialize error
   double toPower;                                    // initialize the speed variable
   double pctError = error / totalError * 100;        // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
@@ -382,13 +388,13 @@ void PIDaccel (double target, double vel, double accelPeriod = 15, double minVel
     error = target - currAngle;                   // grabs current error
     pctError = error / totalError * 100;          // calculate percent error of manuever (0 = end, 100 = beginning, 
 
-    if (100 - abs(pctError) <= accelPeriod) { // Acceleration Period
+    if (100 - fabs(pctError) <= accelPeriod) { // Acceleration Period
       if (pctError > 0){ // fwd
-        toPower = ((100-abs(pctError))/accelPeriod*100) * ((100-minVel)/100) + minVel; // kickstart the Accel/PID at minVel (fwd)
+        toPower = ((100-fabs(pctError))/accelPeriod*100) * ((100-minVel)/100) + minVel; // kickstart the Accel/PID at minVel (fwd)
         toPower /= 100; // convert to a pct
       }
       else { // rev
-        toPower = -((100-abs(pctError))/accelPeriod*100) * ((100-minVel)/100) - minVel; // kickstart the Accel/PID at minVel (rev)
+        toPower = -((100-fabs(pctError))/accelPeriod*100) * ((100-minVel)/100) - minVel; // kickstart the Accel/PID at minVel (rev)
         toPower /= 100; // convert to a pct
       }  
     }
@@ -458,12 +464,11 @@ void autoControl( void ) {
 
 
 int main() {
-    botTracking.change_rate(50); // Set the update rate of the odometry tracking system (in Hz, or updates/sec), STD is 50.
-
+    PIDauto(360, 20);
     Competition.drivercontrol( userControl );
     Competition.autonomous( autoControl );
 
-    thread Odometry = thread( sysUpdate ); // Initate a seperate thread to run Odometry in the background.
+    //thread Odometry = thread( sysUpdate ); // Initate a seperate thread to run Odometry in the background.
 
     while(true) {
       task::sleep(100); // prevent main from exiting with an infinite loop -> For task scheduling
