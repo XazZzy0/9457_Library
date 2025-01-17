@@ -1,6 +1,20 @@
 #include "vex.h"
 using namespace vex;
 
+/*
+██████╗ ███████╗███████╗██╗███╗   ██╗██╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+██╔══██╗██╔════╝██╔════╝██║████╗  ██║██║╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+██║  ██║█████╗  █████╗  ██║██╔██╗ ██║██║   ██║   ██║██║   ██║██╔██╗ ██║███████╗
+██║  ██║██╔══╝  ██╔══╝  ██║██║╚██╗██║██║   ██║   ██║██║   ██║██║╚██╗██║╚════██║
+██████╔╝███████╗██║     ██║██║ ╚████║██║   ██║   ██║╚██████╔╝██║ ╚████║███████║
+╚═════╝ ╚══════╝╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+
+*/
+
+#define PI          3.14159 // Pi
+#define DEG2RAD     PI/180  // Degrees to Radians
+#define RAD2DEG     180/PI  // Radians to Degrees
+
 // === PID Initialization ===
 double angleSet[] = {0, 360, 180};
 double stateError = 0.0;
@@ -18,6 +32,7 @@ motor_group leftSide = motor_group(Motorleft1, Motorleft2);     // leftSide
 motor_group rightSide = motor_group(Motorright1, Motorright2);  // rightSide
 
 rotation Rotation = rotation(PORT9, false);  // Rotation callout (for PID example)
+rotation Rotation2 = rotation(PORT5, false);  // Rotation callout (for PID example)
 rotation vDW = rotation(PORT2, false);       // vertical deadwheel 
 rotation vDW_left = rotation(PORT2, false);  // vertical deadwheel (left side)
 rotation vDW_right = rotation(PORT2, false); // vertical deadwheel (right side)
@@ -142,13 +157,14 @@ class botOdom {
     hWheel_Diameter  -> Horizontal Deadwheel Diameter (optional input) 
     */
     void update ( double vWheel, double hWheel, double angle, double vWheel_Diameter = 2.75,  double hWheel_Diameter = 2.75 ) {
-      tdot = (angle - tPrev)*(3.14159/180);                           // change in heading from the previous position.  [Radians/hz]
-      vdot = (vWheel - vPrev)/360*3.14159*vWheel_Diameter;            // change in the x location from the previous position. [in/hz]
-      hdot = (hWheel - hPrev)/360*3.14159*vWheel_Diameter;            // change in the y location from the previous position. [in/hz]
+      tdot = (angle - tPrev)*(DEG2RAD);                          // change in heading from the previous position.  [Radians/hz]
+      vdot = (vWheel - vPrev)/360*PI*vWheel_Diameter;            // change in the x location from the previous position. [in/hz]
+      hdot = (hWheel - hPrev)/360*PI*vWheel_Diameter;            // change in the y location from the previous position. [in/hz]
+      if (tdot == 0) {tdot = 1E-8;};                             // prevent divide by zero errors 
 
       double lx = 2*sin(tdot/2)*(hdot/tdot + hOffset);  //Local (Robot) Odometry Frame shifted by tdot/2
       double ly = 2*sin(tdot/2)*(vdot/tdot + vOffset);  //Local (Robot) Odometry Frame shifted by tdot/2
-                                                                                
+                                                                                    
       xG += (ly*cos(tG + tdot/2)) + (lx*sin(tG + tdot/2));     // update Inertial Frame [Inches]
       yG += (ly*sin(tG + tdot/2)) - (lx*cos(tG + tdot/2));     // update Inertial Frame [Inches]
       tG += tdot; 
@@ -212,7 +228,7 @@ class botOdom {
 
 };
 // Creation of the Global Odometry class - so that it can be accessed everywhere
-botOdom botTracking; 
+botOdom botTracking(0, 0); 
 
 /* 
     Currently in work. Relative coordinate system.
@@ -322,13 +338,14 @@ dTerm  -> Derivative coefficient (optional)
 void PIDauto (double target, double vel, double pTerm = 3.15, double iTerm = 0.0, double dTerm = 0.225, int breakoutCount = 12){
   // Initialize PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
   PID anglePID(pTerm, iTerm, dTerm);
-  int update_hz = 50; 
+  int update_hz = 50;
+  double tolBound = 5; 
   int breakout = 0;
 
   // Reset the encoder to zero, gather the new manuever distance, can be positve or negative (indicates cw/ccw rotation)
   Rotation.resetPosition();                          // reset the position of the rotation sensor, motor encoder, imu heading, etc...
   double currAngle = 0;                              // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running
-  double totalError = fabs(target - currAngle);       // initialize absolute total error of manuever
+  double totalError = fabs(target - currAngle);      // initialize absolute total error of manuever
   double error = target - currAngle;                 // initialize error
   double toPower;                                    // initialize the speed variable
   double pctError = error / totalError * 100;        // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
@@ -343,13 +360,13 @@ void PIDauto (double target, double vel, double pTerm = 3.15, double iTerm = 0.0
 
     toPower = anglePID.calculate(pctError)/100; // calculate PID response
 
-    printf("target: %f \t Pterm: %f \t Iterm: %f \t Dterm: %f \n", currAngle, anglePID.Pterm, anglePID.Iterm, anglePID.Dterm);
+    printf("target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
     
     Motor.spin(fwd, toPower*12, voltageUnits::volt);   // spin the motor (using voltage)
 
     task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
 
-    if (currAngle >= target - 2 && currAngle <= target + 2){ ++breakout; } // Count up on the breakout period
+    if (fabs(currAngle) >= fabs(target - tolBound) && fabs(currAngle) <= fabs(target + tolBound)){ ++breakout; } // Count up on the breakout period
     else { breakout = 0; }
   }
   Motor.stop(); // ensures that the motor stops so it doesn't draw extra power
@@ -370,12 +387,13 @@ void PIDaccel (double target, double vel, double accelPeriod = 15, double minVel
   // Initialize PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
   PID anglePID(pTerm, iTerm, dTerm);
   int update_hz = 50; 
+  double tolBound = 5; 
   int breakout = 0;
 
   // Reset the encoder to zero, gather the new manuever distance, can be positve or negative (indicates cw/ccw rotation)
   Rotation.resetPosition();                          // reset the position of the rotation sensor, motor encoder, imu heading, etc...
   double currAngle = 0;                              // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running
-  double totalError = fabs(target - currAngle);       // initialize absolute total error of manuever
+  double totalError = fabs(target - currAngle);      // initialize absolute total error of manuever
   double error = target - currAngle;                 // initialize error
   double toPower;                                    // initialize the speed variable
   double pctError = error / totalError * 100;        // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
@@ -400,13 +418,13 @@ void PIDaccel (double target, double vel, double accelPeriod = 15, double minVel
     }
     else { toPower = anglePID.calculate(pctError)/100; } // Standard PID response
 
-    printf("target: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
+    printf("target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
     
     Motor.spin(fwd, toPower*12, voltageUnits::volt);   // spin the motor (using voltage)
 
     task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
 
-    if (currAngle >= target - 2 && currAngle <= target + 2){ ++breakout; } // Count up on the breakout period
+    if (fabs(currAngle) >= fabs(target - tolBound) && fabs(currAngle) <= fabs(target + tolBound)){ ++breakout; } // Count up on the breakout period
     else { breakout = 0; }
   }
   Motor.stop(); // ensures that the motor stops so it doesn't draw extra power
@@ -423,12 +441,16 @@ iTerm  -> Integral coefficient (optional)
 dTerm  -> Derivative coefficient (optional)
 */
 void sysUpdate ( void ){
+    Rotation.resetPosition(); // reset the tracking wheel positions before operation
+    Rotation2.resetPosition();
+
   while(true){
     // Updating the Position and heading of the robot (use custom "update" for your system)
-    botTracking.update( vDW_left.position(degrees), hDW.position(degrees), IMU.rotation(degrees) ); // in this case - 1 horizontal, 1 vertical, 1 imu
+    //botTracking.update( vDW_left.position(degrees), hDW.position(degrees), IMU.rotation(degrees) ); // in this case - 1 horizontal, 1 vertical, 1 imu
+    botTracking.update( Rotation.position(degrees), Rotation2.position(degrees), 90, 3.25, 3.25 );
 
     // Print the position and heading of the robot for debugging purposes
-    printf("X Position = [%.2f] \t Y Position = [%.2f] \t Theta Heading = [%.] \n", botTracking.xG, botTracking.yG, botTracking.tG);
+    printf("Global Coordinates: [%.2f, %.2f, %.2f] \n", botTracking.xG, botTracking.yG, botTracking.tG*RAD2DEG);
 
     // Sleep the task for accurate update tracking.
     task::sleep(1000/botTracking.update_hz);
@@ -464,11 +486,11 @@ void autoControl( void ) {
 
 
 int main() {
-    PIDauto(360, 20);
+    //PIDauto(360, 20);
     Competition.drivercontrol( userControl );
     Competition.autonomous( autoControl );
 
-    //thread Odometry = thread( sysUpdate ); // Initate a seperate thread to run Odometry in the background.
+    thread Odometry = thread( sysUpdate ); // Initate a seperate thread to run Odometry in the background.
 
     while(true) {
       task::sleep(100); // prevent main from exiting with an infinite loop -> For task scheduling
