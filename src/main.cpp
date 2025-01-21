@@ -214,13 +214,13 @@ iTerm  -> Integral coefficient (optional)
 dTerm  -> Derivative coefficient (optional)
 */
 void sysUpdate ( void ){
+    botTracking.setPose(10, 10, 0); // Sets the current location plus heading of the robot
     Rotation.resetPosition(); // reset the tracking wheel positions before operation
     Rotation2.resetPosition();
 
   while(true){
     // Updating the Position and heading of the robot (use custom "update" for your system)
-    //botTracking.update( vDW_left.position(degrees), hDW.position(degrees), IMU.rotation(degrees) ); // in this case - 1 horizontal, 1 vertical, 1 imu
-    botTracking.update(Rotation.position(degrees), Rotation2.position(degrees), 0);
+    botTracking.update(Rotation.position(degrees), Rotation2.position(degrees), 0, 3.25, 3.25);
 
     // Print the position and heading of the robot for debugging purposes
     printf("Global Coordinates: [%.2f, %.2f, %.2f] \n", botTracking.xG, botTracking.yG, botTracking.tG*RAD2DEG);

@@ -2,6 +2,7 @@
 #include "vex.h"
 using namespace vex;
 
+
 /*
 ██████╗ ███████╗███████╗██╗███╗   ██╗██╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
 ██╔══██╗██╔════╝██╔════╝██║████╗  ██║██║╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
@@ -17,7 +18,13 @@ using namespace vex;
 #define DEG2RAD     PI/180  // Degrees to Radians
 #define RAD2DEG     180/PI  // Radians to Degrees
 
-
+/** ==============================================================================================================================================================================
+ * @class PID
+ * @details 
+ * 
+ * [Insert description here]
+ * ==============================================================================================================================================================================
+ */
 class PID {
     private: 
         // Variables
@@ -39,6 +46,18 @@ class PID {
         void setVel( double toPower );
 };
 
+/** ==============================================================================================================================================================================
+ * 
+ * @details 
+ * 
+ * THIS IS A ODOMETRY OBJECT, CREATE A NEW INSTANCE WHENEVER YOU WOULD LIKE A UNIQUE RESPONSE.
+ * MULTI-THREADING WILL NEED TO BE UTILIZED IN THE BACKGROUND IF PROPER IMPLEMENTATION IS DESIRED.
+ * THE BACK-END MATH IS BASED ON EUCLIDIAN DYNAMICS AND MAY BE PRONE TO ERROR. THIS IS FOR A 
+ * BASIC CONTROL SYSTEM AND DEALS WITH ALL THE BACKEND UPDATING IN TERMS OF TOTALS/ABSOLUTES.
+ * IMU.ROTATION() WILL NEED TO BE CALLED ALONG WITH MOTOR.POSITION(), INSTEAD OF IMU.HEADING()
+ * AND MOTOR.ANGLE().
+ * ==============================================================================================================================================================================
+ */
 class botOdom {
     private:
         inertial IMU;
@@ -65,7 +84,14 @@ class botOdom {
         void change_rate( double rate_hz );
 };
 
-class controlDrive {
+/** ==============================================================================================================================================================================
+ * @class controlDrive
+ * @details 
+ * 
+ * [Insert description here]
+ * ==============================================================================================================================================================================
+ */
+class controlDrive { // Used for pathing manuevers with Odometry
     private:
         motor_group left;   // a motor_group containing the left side of the drivebase
         motor_group right;  // a motor_group containing the right side of the drivebase

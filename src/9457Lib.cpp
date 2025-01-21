@@ -1,24 +1,6 @@
 #include "vex.h"
 #include "9457Lib.h"
 
-/*===================================================================
-                            9457 CODING LIBRARY
-
-                    PROPRIETARY TO MANKATO EAST ROBOTICS:
-    (NOT INTENDED FOR ANY DISTRIBUTION WITHOUT COACHES EXPLICIT AUTHORIZATION ) 
-
-Summary: 
-    This coding library is intended to act as a guide to assist students in
-    understanding how typical control systems operate. It is not meant as a 
-    copy and paste guide to make your autonomous work. Each section will likely
-    require revisons, but this presents a basic outline to ease the student into
-    the workflow rather than pushing a "trial by fire method".
-
-CREATED BY: Jacob Wood (Coach) and Nico Wood (Coach).
-LAST MODIFED: (See Github)
-===================================================================*/
-
-
 /*
 ██████╗ ██╗██████╗      ██████╗ ██████╗ ███╗   ██╗████████╗██████╗  ██████╗ ██╗     ██╗     ███████╗██████╗
 ██╔══██╗██║██╔══██╗    ██╔════╝██╔═══██╗████╗  ██║╚══██╔══╝██╔══██╗██╔═══██╗██║     ██║     ██╔════╝██╔══██╗
@@ -68,14 +50,6 @@ void PID::setVel(double toPower){
 ██║   ██║██║  ██║██║   ██║██║╚██╔╝██║██╔══╝     ██║   ██╔══██╗  ╚██╔╝      ██║     ██║     ██╔══██║╚════██║╚════██║
 ╚██████╔╝██████╔╝╚██████╔╝██║ ╚═╝ ██║███████╗   ██║   ██║  ██║   ██║       ╚██████╗███████╗██║  ██║███████║███████║
  ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝        ╚═════╝╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝
-
-THIS IS A ODOMETRY OBJECT, CREATE A NEW INSTANCE WHENEVER YOU WOULD LIKE A UNIQUE RESPONSE.
-MULTI-THREADING WILL NEED TO BE UTILIZED IN THE BACKGROUND IF PROPER IMPLEMENTATION IS DESIRED.
-
-THE BACK-END MATH IS BASED ON EUCLIDIAN DYNAMICS AND MAY BE PRONE TO ERROR. THIS IS FOR A 
-BASIC CONTROL SYSTEM AND DEALS WITH ALL THE BACKEND UPDATING IN TERMS OF TOTALS/ABSOLUTES.
-IMU.ROTATION() WILL NEED TO BE CALLED ALONG WITH MOTOR.POSITION(), INSTEAD OF IMU.HEADING()
-AND MOTOR.ANGLE().
 */
 
 // Possible Constructors of the Odometry function
