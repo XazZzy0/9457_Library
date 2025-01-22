@@ -104,4 +104,22 @@ class controlDrive { // Used for pathing manuevers with Odometry
         void pointTurn(double degrees, double vel, bool waitCompletion = true);
 };
 
+/** ==============================================================================================================================================================================
+ * @class controlMotor
+ * @details 
+ * 
+ * [Insert description here]
+ * ==============================================================================================================================================================================
+ */
+
+class controlMotor {
+    private:
+        motor Motor; // Specific motor which will be controlled
+
+    public:
+        controlMotor( motor ptrMotor );
+        
+        void spin_inf( directionType dir, double vel );
+};
+
 #endif // End of File //
