@@ -258,8 +258,9 @@ void autoControl( void ) {
 }
 
 
+controlMotor tempMotor(&Motor);
 int main() {
-    //PIDauto(360, 20);
+    tempMotor.pidRotate(100, 100);
     Competition.drivercontrol( userControl );
     Competition.autonomous( autoControl );
 

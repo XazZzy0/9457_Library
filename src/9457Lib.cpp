@@ -55,32 +55,32 @@ Self Explanatory
 */
 // Possible Consrtuctors of the Odometry function
 // CASE 1 - No DW, 1 IMU
-botOdom::botOdom( vex::inertial IMU_init ) :  
-  xG(0), yG(0), tG(0),
+botOdom::botOdom( vex::inertial &IMU_init ) :  
   update_hz(50),
-  IMU(IMU_init)
+  IMU(IMU_init),
+  xG(0), yG(0), tG(0)
   {} 
 
 // CASE 2 - 2 DW (perpedicular to eachother), 1 IMU
-botOdom::botOdom( double v_Offset, double h_Offset, vex::inertial IMU_init) :  
-  xG(0), yG(0), tG(0),
+botOdom::botOdom( double v_Offset, double h_Offset, vex::inertial &IMU_init) :  
   update_hz(50),
   vOffset(v_Offset), hOffset(h_Offset), 
-  IMU(IMU_init)
+  IMU(IMU_init),
+  xG(0), yG(0), tG(0)
   {} 
 
 // CASE 3 - 1 DW (perp/parallel), 1 IMU -> bool is true if DW is perpendicular to Wheelbase, else false if parallel
-botOdom::botOdom( bool wheelPerp, vex::inertial IMU_init ) : 
-  xG(0), yG(0), tG(0),
-  update_hz(50), 
-  IMU(IMU_init)
+botOdom::botOdom( bool wheelPerp, vex::inertial &IMU_init ) : 
+  update_hz(50),
+  IMU(IMU_init),
+  xG(0), yG(0), tG(0) 
   {} 
 
 // CASE 4 - 3 DW, no IMU
-botOdom::botOdom( double LeftOffset, double RightOffset, double RearOffset, vex::inertial IMU_init) : 
-  xG(0), yG(0), tG(0),
-  update_hz(50), 
-  IMU(IMU_init)
+botOdom::botOdom( double LeftOffset, double RightOffset, double RearOffset, vex::inertial &IMU_init) : 
+  update_hz(50),
+  IMU(IMU_init),
+  xG(0), yG(0), tG(0)
   {}  
 
   /* --- SYSTEM UPDATE 1 FUNCTION ---
@@ -179,7 +179,7 @@ Currently in work. Relative coordinate system.
 working to implement motor plug-ins and more advanced manuevers.
 Needs Odom to work as of the moment
 */
-controlDrive::controlDrive( motor_group leftGroup, motor_group rightGroup, inertial botIMU ) : 
+controlDrive::controlDrive( vex::motor_group &leftGroup, vex::motor_group &rightGroup, vex::inertial &botIMU ) : 
     left(leftGroup), right(rightGroup), IMU(botIMU)
     {}
 
@@ -201,7 +201,58 @@ void controlDrive::pointTurn( double degrees, double vel, bool waitCompletion ) 
 ╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝       ╚═╝     ╚═╝ ╚═════╝    ╚═╝    ╚═════╝ ╚═╝  ╚═╝
 
 */
-void controlMotor::spin_inf( vex::directionType dir, double vel )
-{
-  Motor.spin(fwd, vel);
+controlMotor::controlMotor( vex::motor *ptrMotor ) : 
+  refMotor(ptrMotor), refEncoder(nullptr) 
+  {}
+
+controlMotor::controlMotor( vex::motor *ptrMotor, vex::rotation *ptrRot) :
+  refMotor(ptrMotor), refEncoder(ptrRot)
+  {}
+
+void controlMotor::testSpin( void ){
+  refMotor->spin(vex::forward, 100, vex::velocityUnits::pct);
+}
+
+void controlMotor::pidRotate( double target, double maxVel, double pTerm, double iTerm, double dTerm, int breakoutCount ){
+  if (!refEncoder) { // nullptr case
+    refMotor->spin(vex::forward, 100, vex::velocityUnits::pct);
+  }
+  else {  
+    // Initialize PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
+    PID anglePID(pTerm, iTerm, dTerm);
+    int update_hz = 50;
+    double tolBound = 5; 
+    int breakout = 0;
+
+    // Reset the encoder to zero, gather the new manuever distance, can be positve or negative (indicates cw/ccw rotation)
+    refEncoder->resetPosition();                        // reset the position of the rotation sensor, motor encoder, imu heading, etc...
+    double currAngle = 0;                              // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running
+    double totalError = fabs(target - currAngle);      // initialize absolute total error of manuever
+    double error = target - currAngle;                 // initialize error
+    double toPower;                                    // initialize the speed variable
+    double pctError = error / totalError * 100;        // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
+
+    // Set the motor power to the specified amount
+    anglePID.setVel(maxVel);
+
+    while(breakout < breakoutCount){ // insert your conditional for when you want it to run (base it off of being always true)
+      currAngle = refEncoder->position(degrees);       // grabs current position 
+      error = target - currAngle;                   // grabs current error
+      pctError = error / totalError * 100;          // calculate percent error of manuever (0 = beginning, 100 = end, 
+
+      toPower = anglePID.calculate(pctError)/100; // calculate PID response
+
+      printf("target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
+      
+      refMotor->spin(fwd, toPower*12, voltageUnits::volt);   // spin the motor (using voltage)
+
+      task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
+
+      if (fabs(currAngle) >= fabs(target - tolBound) && fabs(currAngle) <= fabs(target + tolBound)){ ++breakout; } // Count up on the breakout period
+      else { breakout = 0; }
+    }
+  }
+
+  //refMotor->stop(); // ensures that the motor stops so it doesn't draw extra power
+  
 }

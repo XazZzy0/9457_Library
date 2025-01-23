@@ -60,7 +60,7 @@ class PID {
  */
 class botOdom {
     private:
-        inertial IMU;
+        inertial &IMU;
 
         double vOffset = 0, hOffset = 0;                                 // Variables to represent the deadwheel offsets
         double vPrev = 0, vLPrev = 0, vRPrev = 0, hPrev = 0, tPrev = 0;  // Variables to represent the previous encoder positions
@@ -72,10 +72,10 @@ class botOdom {
         double xG, yG, tG; // (In, In, Rad) [INERTIAL FRAME]
         
         // Methods
-        botOdom( inertial IMU_init );
-        botOdom( double v_Offset, double h_Offset, inertial IMU_init );
-        botOdom( bool wheelPerp, inertial IMU_init );
-        botOdom( double LeftOffset, double RightOffset, double RearOffset, inertial IMU_init );
+        botOdom( inertial &IMU_init );
+        botOdom( double v_Offset, double h_Offset, inertial &IMU_init );
+        botOdom( bool wheelPerp, inertial &IMU_init );
+        botOdom( double LeftOffset, double RightOffset, double RearOffset, inertial &IMU_init );
 
         void update( double vWheel, double hWheel, double angle, double vWheel_Diameter = 2.75,  double hWheel_Diameter = 2.75 );
         void update_2( double hWheel, double angle, double hWheel_Diameter = 2.75 );
@@ -93,12 +93,12 @@ class botOdom {
  */
 class controlDrive { // Used for pathing manuevers with Odometry
     private:
-        motor_group left;   // a motor_group containing the left side of the drivebase
-        motor_group right;  // a motor_group containing the right side of the drivebase
-        inertial IMU;       // an inertial class containing the IMU info
+        motor_group &left;   // a motor_group containing the left side of the drivebase
+        motor_group &right;  // a motor_group containing the right side of the drivebase
+        inertial &IMU;       // an inertial class containing the IMU info
 
     public:
-        controlDrive( motor_group leftGroup, motor_group rightGroup, inertial botIMU );
+        controlDrive( motor_group &leftGroup, motor_group &rightGroup, inertial &botIMU );
 
         void driveFwd( double dist, double vel, bool waitCompletion = true );
         void pointTurn(double degrees, double vel, bool waitCompletion = true);
@@ -114,12 +114,15 @@ class controlDrive { // Used for pathing manuevers with Odometry
 
 class controlMotor {
     private:
-        motor Motor; // Specific motor which will be controlled
+        motor *refMotor; // Reference pointer to specific motor which will be controlled
+        rotation *refEncoder; // Reference pointer to the specific encoder.
 
     public:
-        controlMotor( motor ptrMotor );
+        controlMotor( motor *ptrMotor );
+        controlMotor( motor *ptrMotor, rotation *ptrRot );
         
-        void spin_inf( directionType dir, double vel );
+        void testSpin( void );
+        void pidRotate( double target, double maxVel, double pTerm = 3.15, double iTerm = 0.0, double dTerm = 0.225, int breakoutCount = 12 );
 };
 
 #endif // End of File //
