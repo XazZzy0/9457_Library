@@ -215,10 +215,10 @@ void controlMotor::testSpin( void ){
 
 void controlMotor::pidRotate( double target, double maxVel, double pTerm, double iTerm, double dTerm, int breakoutCount ){
   if (!refEncoder) { // nullptr case
-    refMotor->spin(vex::forward, 100, vex::velocityUnits::pct);
+    // Do something - need to write lol
   }
   else {  
-    // Initialize PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
+    // Initialize local PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
     PID anglePID(pTerm, iTerm, dTerm);
     int update_hz = 50;
     double tolBound = 5; 
