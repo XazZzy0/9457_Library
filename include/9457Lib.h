@@ -10,7 +10,6 @@ using namespace vex;
 ██║  ██║██╔══╝  ██╔══╝  ██║██║╚██╗██║██║   ██║   ██║██║   ██║██║╚██╗██║╚════██║
 ██████╔╝███████╗██║     ██║██║ ╚████║██║   ██║   ██║╚██████╔╝██║ ╚████║███████║
 ╚═════╝ ╚══════╝╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
-
 */
 
 #define EASTLIBRARY
@@ -27,18 +26,13 @@ using namespace vex;
  */
 class PID {
     private: 
-        // Variables
-        // settings for the PID
         double Kp = 0.0, Ki = 0, Kd = 0.0;        //coefficients
         double integral = 0.0, prevError = 0.0;   //integral, previous error (for "I" and "D" coeff.)
         double maxPower = 100.0;                  // max output of the motors (typically 100%)
 
-        // Methods - EMPTY
     public:
-        // Initalizing external access variables
-        double Pterm = 0.0, Iterm = 0.0, Dterm = 0.0;
+        double Pterm = 0.0, Iterm = 0.0, Dterm = 0.0; // Initalizing external access variables
         
-        // Methods
         PID(double kp, double ki, double kd);
 
         double calculate ( double error );
@@ -47,7 +41,7 @@ class PID {
 };
 
 /** ==============================================================================================================================================================================
- * 
+ * @class botOdom
  * @details 
  * 
  * THIS IS A ODOMETRY OBJECT, CREATE A NEW INSTANCE WHENEVER YOU WOULD LIKE A UNIQUE RESPONSE.
@@ -60,28 +54,28 @@ class PID {
  */
 class botOdom {
     private:
-        inertial &IMU;
+        inertial *IMU;
+        rotation *vWheel, *vLWheel, *vRWheel, *hWheel;
 
+        double vWheel_Diameter, hWheel_Diameter; 
         double vOffset = 0, hOffset = 0;                                 // Variables to represent the deadwheel offsets
         double vPrev = 0, vLPrev = 0, vRPrev = 0, hPrev = 0, tPrev = 0;  // Variables to represent the previous encoder positions
         double vdot = 0, hdot = 0, tdot = 0;                             // Variables for the rotational velocity deltas, (deg/hz, deg/hz, Rad/hz) [ROBOT FRAME]
 
     public:
-        // creating neccessary variables for the class - updating and global/previous variables.
-        double update_hz;
+        double update_hz = 50;
         double xG, yG, tG; // (In, In, Rad) [INERTIAL FRAME]
         
-        // Methods
-        botOdom( inertial &IMU_init );
-        botOdom( double v_Offset, double h_Offset, inertial &IMU_init );
-        botOdom( bool wheelPerp, inertial &IMU_init );
-        botOdom( double LeftOffset, double RightOffset, double RearOffset, inertial &IMU_init );
+        botOdom( void );
+        botOdom( rotation *vertWheel, double offset_V, rotation *horWheel, double offset_H );
 
-        void update( double vWheel, double hWheel, double angle, double vWheel_Diameter = 2.75,  double hWheel_Diameter = 2.75 );
-        void update_2( double hWheel, double angle, double hWheel_Diameter = 2.75 );
-        void update_3( double vWheelL, double vWheelR, double hWheel, double vWheelL_Diameter = 2.75, double vWheelR_Diameter = 2.75, double hWheel_Diameter = 2.75 );
+        void setVerticalDiameter( double Diameter );
+        void setHorizontalDiameter( double Diameter );
         void setPose( double xPose, double yPose, double tPose );
-        void change_rate( double rate_hz );
+        void setRate( double rate_hz );
+
+        void update( double vWheel, double hWheel, double angle );
+        
 };
 
 /** ==============================================================================================================================================================================
@@ -93,12 +87,11 @@ class botOdom {
  */
 class controlDrive { // Used for pathing manuevers with Odometry
     private:
-        motor_group &left;   // a motor_group containing the left side of the drivebase
-        motor_group &right;  // a motor_group containing the right side of the drivebase
-        inertial &IMU;       // an inertial class containing the IMU info
+        motor_group *left, *right;   // a motor_group containing the left and right side of the drivebase
+        inertial *IMU;       // an inertial class containing the IMU info
 
     public:
-        controlDrive( motor_group &leftGroup, motor_group &rightGroup, inertial &botIMU );
+        controlDrive( motor_group *leftGroup, motor_group *rightGroup, inertial *botIMU );
 
         void driveFwd( double dist, double vel, bool waitCompletion = true );
         void pointTurn(double degrees, double vel, bool waitCompletion = true);
@@ -114,15 +107,23 @@ class controlDrive { // Used for pathing manuevers with Odometry
 
 class controlMotor {
     private:
-        motor *refMotor; // Reference pointer to specific motor which will be controlled
-        rotation *refEncoder; // Reference pointer to the specific encoder.
+        motor *refMotor;                        // pointer to specific motor which will be controlled
+        motor_group *refGroup;                  // pointer to specific motor group which will be controlled
+        rotation *refEncoder;                   // pointer to the specific encoder.
+        double PID_Coef[3] = {3.15, 0, .225};   // the PID Coeff callback for the specific manuever. 
+        int updateRate = 50.0;                  // the update Rate of the controller (max is 100 hz)
 
     public:
         controlMotor( motor *ptrMotor );
         controlMotor( motor *ptrMotor, rotation *ptrRot );
+        controlMotor( motor_group *ptrGroup, rotation *ptrRot );
+        
+        void setPID( double pTerm = 3.15, double iTerm = 0, double dTerm = .225 ); // Set the default PID variables
+        void setRate( double rate_hz ); // Set the update rate of the system
         
         void testSpin( void );
-        void pidRotate( double target, double maxVel, double pTerm = 3.15, double iTerm = 0.0, double dTerm = 0.225, int breakoutCount = 12 );
+        void pidRotate( double target, double maxVel, int breakoutCount = 12 );
+        void pidAccel( double target, double maxVel, double accelPeriod = 15, double minVel = 10, int breakoutCount = 12 );
 };
 
 #endif // End of File //
