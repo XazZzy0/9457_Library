@@ -40,7 +40,9 @@ void PID::reset( void ){
 }
 
 void PID::setVel(double toPower){
-  maxPower = fabs(toPower);
+  if (fabs(toPower) > 100) { toPower = 100; } // Max speed is 100 pct
+
+  maxPower = fabs(toPower); // No negative signs for power, std to positive
 }
 
 /*
@@ -67,8 +69,9 @@ botOdom::botOdom( rotation *vertWheel, double offset_V, rotation *horWheel, doub
   {} 
 
 
-void botOdom::setVerticalDiameter( double Diameter )  { vWheel_Diameter = Diameter; }
-void botOdom::setHorizontalDiameter( double Diameter) { hWheel_Diameter = Diameter; }
+void botOdom::setVerticalDiameter( double Diameter )    { vWheel_Diameter = Diameter; }
+void botOdom::setHorizontalDiameter( double Diameter)   { hWheel_Diameter = Diameter; }
+void botOdom::setBotSize( double width, double length ) { baseWidth = width, baseLength = length; }
 
 // Declare your global location 
 void botOdom::setPose ( double xPose, double yPose, double tPose ) {
@@ -135,15 +138,15 @@ Currently in work. Relative coordinate system.
 working to implement motor plug-ins and more advanced manuevers.
 Needs Odom to work as of the moment
 */
-controlDrive::controlDrive( vex::motor_group *leftGroup, vex::motor_group *rightGroup, vex::inertial *botIMU ) : 
+chassis::chassis( vex::motor_group *leftGroup, vex::motor_group *rightGroup, vex::inertial *botIMU ) : 
     left(leftGroup), right(rightGroup), IMU(botIMU)
     {}
 
-void controlDrive::driveFwd( double dist, double vel, bool waitCompletion ) {
+void chassis::driveFwd( double dist, double vel, bool waitCompletion ) {
   //do nothing, for right now
 }
 
-void controlDrive::pointTurn( double degrees, double vel, bool waitCompletion ) {
+void chassis::pointTurn( double degrees, double vel, bool waitCompletion ) {
   //do nothing, for right now
 }
 
@@ -219,7 +222,7 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
 
       toPower = anglePID.calculate(pctError)/100; // calculate PID response
 
-      //printf("target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
+      printf("Without Encoder --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
       
       refMotor->spin(fwd, toPower*12, voltageUnits::volt);   // spin the motor (using voltage)
 
@@ -239,7 +242,7 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
 
       toPower = anglePID.calculate(pctError)/100; // calculate PID response
 
-      //printf("target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
+      printf("With Encoder (MG) --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
       
       refMotor->spin(fwd, toPower*12, voltageUnits::volt);   // spin the motor (using voltage)
 
@@ -259,7 +262,7 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
 
       toPower = anglePID.calculate(pctError)/100; // calculate PID response
 
-      //printf("target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
+      printf("With Encoder (Motor) --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
       
       refMotor->spin(fwd, toPower*12, voltageUnits::volt);   // spin the motor (using voltage)
 
@@ -300,11 +303,11 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
 
       if (100 - fabs(pctError) <= accelPeriod) { // Acceleration Period
         if (pctError > 0){ // fwd
-          toPower = ((100-fabs(pctError))/accelPeriod*100) * ((100-minVel)/100) + minVel; // kickstart the Accel/PID at minVel (fwd)
+          toPower = ((100-fabs(pctError))/accelPeriod) * (maxVel-minVel) + minVel; // kickstart the Accel/PID at minVel (fwd)
           toPower /= 100; // convert to a pct
         }
         else { // rev
-          toPower = -((100-fabs(pctError))/accelPeriod*100) * ((100-minVel)/100) - minVel; // kickstart the Accel/PID at minVel (rev)
+          toPower = -((100-fabs(pctError))/accelPeriod) * (maxVel-minVel) - minVel; // kickstart the Accel/PID at minVel (rev)
           toPower /= 100; // convert to a pct
         }  
       }
@@ -331,11 +334,11 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
 
       if (100 - fabs(pctError) <= accelPeriod) { // Acceleration Period
         if (pctError > 0){ // fwd
-          toPower = ((100-fabs(pctError))/accelPeriod*100) * ((100-minVel)/100) + minVel; // kickstart the Accel/PID at minVel (fwd)
+          toPower = ((100-fabs(pctError))/accelPeriod) * (maxVel-minVel) + minVel; // kickstart the Accel/PID at minVel (fwd)
           toPower /= 100; // convert to a pct
         }
         else { // rev
-          toPower = -((100-fabs(pctError))/accelPeriod*100) * ((100-minVel)/100) - minVel; // kickstart the Accel/PID at minVel (rev)
+          toPower = -((100-fabs(pctError))/accelPeriod) * (maxVel-minVel) - minVel; // kickstart the Accel/PID at minVel (rev)
           toPower /= 100; // convert to a pct
         }  
       }
@@ -362,11 +365,11 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
 
       if (100 - fabs(pctError) <= accelPeriod) { // Acceleration Period
         if (pctError > 0){ // fwd
-          toPower = ((100-fabs(pctError))/accelPeriod*100) * ((100-minVel)/100) + minVel; // kickstart the Accel/PID at minVel (fwd)
+          toPower = ((100-fabs(pctError))/accelPeriod) * (maxVel-minVel) + minVel; // kickstart the Accel/PID at minVel (fwd)
           toPower /= 100; // convert to a pct
         }
         else { // rev
-          toPower = -((100-fabs(pctError))/accelPeriod*100) * ((100-minVel)/100) - minVel; // kickstart the Accel/PID at minVel (rev)
+          toPower = -((100-fabs(pctError))/accelPeriod) * (maxVel-minVel) - minVel; // kickstart the Accel/PID at minVel (rev)
           toPower /= 100; // convert to a pct
         }  
       }

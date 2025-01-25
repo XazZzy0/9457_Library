@@ -122,14 +122,15 @@ void autoControl( void ) {
 }
 
 int main() {
-    tempMotor.pidRotate(100, 100);
+  tempMotor.setPID(3.5);
+  tempMotor.pidAccel(900, 100);
 
-    Competition.drivercontrol( userControl );
-    Competition.autonomous( autoControl );
+  Competition.drivercontrol( userControl );
+  Competition.autonomous( autoControl );
 
-    thread Odometry = thread( sysUpdate ); // Initate a seperate thread to run Odometry in the background.
+  //thread Odometry = thread( sysUpdate ); // Initate a seperate thread to run Odometry in the background.
 
-    while(true) {
-      task::sleep(100); // prevent main from exiting with an infinite loop -> For task scheduling
-    }
+  while(true) {
+    task::sleep(100); // prevent main from exiting with an infinite loop -> For task scheduling
+  }
 }

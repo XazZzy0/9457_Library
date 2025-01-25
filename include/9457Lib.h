@@ -57,7 +57,8 @@ class botOdom {
         inertial *IMU;
         rotation *vWheel, *vLWheel, *vRWheel, *hWheel;
 
-        double vWheel_Diameter, hWheel_Diameter; 
+        double vWheel_Diameter, hWheel_Diameter;
+        double baseWidth, baseLength; 
         double vOffset = 0, hOffset = 0;                                 // Variables to represent the deadwheel offsets
         double vPrev = 0, vLPrev = 0, vRPrev = 0, hPrev = 0, tPrev = 0;  // Variables to represent the previous encoder positions
         double vdot = 0, hdot = 0, tdot = 0;                             // Variables for the rotational velocity deltas, (deg/hz, deg/hz, Rad/hz) [ROBOT FRAME]
@@ -71,6 +72,7 @@ class botOdom {
 
         void setVerticalDiameter( double Diameter );
         void setHorizontalDiameter( double Diameter );
+        void setBotSize( double width, double length );
         void setPose( double xPose, double yPose, double tPose );
         void setRate( double rate_hz );
 
@@ -85,13 +87,13 @@ class botOdom {
  * [Insert description here]
  * ==============================================================================================================================================================================
  */
-class controlDrive { // Used for pathing manuevers with Odometry
+class chassis { // Used for pathing manuevers with Odometry
     private:
         motor_group *left, *right;   // a motor_group containing the left and right side of the drivebase
         inertial *IMU;       // an inertial class containing the IMU info
 
     public:
-        controlDrive( motor_group *leftGroup, motor_group *rightGroup, inertial *botIMU );
+        chassis( motor_group *leftGroup, motor_group *rightGroup, inertial *botIMU );
 
         void driveFwd( double dist, double vel, bool waitCompletion = true );
         void pointTurn(double degrees, double vel, bool waitCompletion = true);
@@ -110,7 +112,7 @@ class controlMotor {
         motor *refMotor;                        // pointer to specific motor which will be controlled
         motor_group *refGroup;                  // pointer to specific motor group which will be controlled
         rotation *refEncoder;                   // pointer to the specific encoder.
-        double PID_Coef[3] = {3.15, 0, .225};   // the PID Coeff callback for the specific manuever. 
+        double PID_Coef[3] = {2.25, 0, .225};   // the PID Coeff callback for the specific manuever. 
         int updateRate = 50.0;                  // the update Rate of the controller (max is 100 hz)
 
     public:
@@ -118,7 +120,7 @@ class controlMotor {
         controlMotor( motor *ptrMotor, rotation *ptrRot );
         controlMotor( motor_group *ptrGroup, rotation *ptrRot );
         
-        void setPID( double pTerm = 3.15, double iTerm = 0, double dTerm = .225 ); // Set the default PID variables
+        void setPID( double pTerm = 2.25, double iTerm = 0, double dTerm = .225 ); // Set the default PID variables
         void setRate( double rate_hz ); // Set the update rate of the system
         
         void testSpin( void );
