@@ -6,13 +6,22 @@ using namespace vex;
 competition Competition;
 brain Brain;
 
-motor Motor = motor(PORT5, false);            // The motor
-rotation Rotation = rotation(PORT9, false);  // Rotation callout (for PID example)
-inertial IMU = inertial(PORT2);              // For the inertial unit
+motor LF = motor(PORT19, ratio6_1, true);
+motor LM = motor(PORT8, ratio6_1, true);
+motor LR = motor(PORT4, ratio6_1, false);
+motor RF = motor(PORT18, ratio6_1, false);
+motor RM = motor(PORT1, ratio6_1, true);
+motor RR = motor(PORT2, ratio6_1, false);
+motor_group leftMotors = motor_group( LF, LM, LR );
+motor_group rightMotors = motor_group( RF, RM, RR );
+motor_group motors = motor_group( LF, LM, LR, RF, RM, RR );
+//rotation Rotation = rotation(PORT9, false);
+inertial IMU = inertial(PORT3);
 
 // === Global Library specification ===
 botOdom botTracking;
-controlMotor tempMotor(&Motor, &Rotation);
+controlMotor tempMotor(&motors);
+chassis Chassy(&leftMotors, &rightMotors, &IMU);
 
 /*
 ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
@@ -107,25 +116,26 @@ void sysUpdate ( void ){
 // Pre-autonomous intial setups
 void pre_auton ( void ){
   IMU.calibrate(2);     // Remember to calibrate your IMU
-
+  while( IMU.isCalibrating() ) {
+    task::sleep( 100 );
+  }
 }
 
 void userControl( void ) {
   while( true ) {
-    // Do nothing
     task::sleep(100);
   }
 }
 
 void autoControl( void ) {
-  // Do nothing
+  Chassy.pointTurn( 90, 70 );
+  Chassy.pointTurn( 1, 30 );
 }
 
 int main() {
-  tempMotor.setPID(3.5);
-  tempMotor.pidAccel(900, 100);
+  pre_auton();
 
-  Competition.drivercontrol( userControl );
+  Competition.drivercontrol( autoControl );
   Competition.autonomous( autoControl );
 
   //thread Odometry = thread( sysUpdate ); // Initate a seperate thread to run Odometry in the background.

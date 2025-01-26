@@ -146,8 +146,42 @@ void chassis::driveFwd( double dist, double vel, bool waitCompletion ) {
   //do nothing, for right now
 }
 
-void chassis::pointTurn( double degrees, double vel, bool waitCompletion ) {
-  //do nothing, for right now
+void chassis::pointTurn( double angle, double vel, int breakoutCount, bool waitCompletion ) {
+  // Initialize local PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
+  PID anglePID(turnPID[0], turnPID[1], turnPID[2]);
+  int update_hz = updateRate;
+  double tolBound = 3; 
+  int breakout = 0;
+  
+  double currAngle = 0;                              // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running
+  double totalError = fabs(angle - currAngle);      // initialize absolute total error of manuever
+  double error = angle - currAngle;                 // initialize error
+  double toPower;                                    // initialize the speed variable
+  double pctError = error / totalError * 100;        // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
+
+  // Set the motor power to the specified amount
+  anglePID.setVel(vel);
+
+  while( breakout < breakoutCount ) {
+    currAngle = IMU->rotation( degrees );
+    error = angle - currAngle;
+    pctError = error / totalError * 100;
+
+    toPower = anglePID.calculate( pctError ) / 100;
+
+    printf("With Encoder (MG) --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
+
+    left->spin( fwd, toPower * 12, voltageUnits::volt );
+    right->spin( reverse, toPower * 12, voltageUnits::volt );
+
+    task::sleep( 1000 / update_hz );
+
+    if (fabs( currAngle ) >= fabs( angle - tolBound ) && fabs( currAngle ) <= fabs( angle + tolBound ) ) { ++breakout; }
+    else { breakout = 0; }
+  }
+
+  left->stop();
+  right->stop();
 }
 
 
@@ -172,6 +206,10 @@ controlMotor::controlMotor( vex::motor *ptrMotor, vex::rotation *ptrRot) :
 
 controlMotor::controlMotor( vex::motor_group *ptrGroup, vex::rotation *ptrRot) :
   refMotor(nullptr), refGroup(ptrGroup), refEncoder(ptrRot)
+  {}
+
+controlMotor::controlMotor( vex::motor_group *ptrGroup ) :
+  refMotor(nullptr), refGroup(ptrGroup), refEncoder(nullptr)
   {}
 
 void controlMotor::setPID( double pTerm, double iTerm, double dTerm ) {
@@ -212,7 +250,7 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
   // Set the motor power to the specified amount
   anglePID.setVel(maxVel);
   
-  if (!refEncoder) { // No encoder case 
+  if (!refEncoder && !refGroup) { // Single motor case, no encoder 
      refMotor->resetPosition(); // Reset the encoder to zero
 
      while(breakout < breakoutCount){ // insert your conditional for when you want it to run (base it off of being always true)
@@ -231,12 +269,36 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
       if (fabs(currAngle) >= fabs(target - tolBound) && fabs(currAngle) <= fabs(target + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
     }
+
+    refMotor->stop();
   }
-  else if (!refMotor) { // Motor group case
+  else if (!refMotor && !refEncoder) { // Motor group case
+    refGroup->resetPosition(); // Reset the encoder to zero
+
+    while(breakout < breakoutCount){ // insert your conditional for when you want it to run (base it off of being always true)
+      currAngle = refGroup->position(degrees);       // grabs current position 
+      error = target - currAngle;                   // grabs current error
+      pctError = error / totalError * 100;          // calculate percent error of manuever (0 = beginning, 100 = end, 
+
+      toPower = anglePID.calculate(pctError)/100; // calculate PID response
+
+      printf("With Encoder (MG) --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
+      
+      refGroup->spin(fwd, toPower*12, voltageUnits::volt);   // spin the motor (using voltage)
+
+      task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
+
+      if (fabs(currAngle) >= fabs(target - tolBound) && fabs(currAngle) <= fabs(target + tolBound)){ ++breakout; } // Count up on the breakout period
+      else { breakout = 0; }
+    }
+
+    refGroup->stop();
+  }
+  else if ( !refGroup ) { // Single Motor and Encoder
     refEncoder->resetPosition(); // Reset the encoder to zero
 
     while(breakout < breakoutCount){ // insert your conditional for when you want it to run (base it off of being always true)
-      currAngle = refMotor->position(degrees);       // grabs current position 
+      currAngle = refEncoder->position(degrees);       // grabs current position 
       error = target - currAngle;                   // grabs current error
       pctError = error / totalError * 100;          // calculate percent error of manuever (0 = beginning, 100 = end, 
 
@@ -251,7 +313,10 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
       if (fabs(currAngle) >= fabs(target - tolBound) && fabs(currAngle) <= fabs(target + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
     }
+
+    refMotor->stop();
   }
+  /*
   else {  // Default case 
     refEncoder->resetPosition();  // Reset the encoder to zero
 
@@ -272,8 +337,9 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
       else { breakout = 0; }
     }
   }
+  */
 
-  refMotor->stop(); // ensures that the motor stops so it doesn't draw power
+  //refMotor->stop(); // ensures that the motor stops so it doesn't draw power
 }
 
 void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, double minVel, int breakoutCount ) {
@@ -292,7 +358,7 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
   // Set the motor power to the specified amount
   anglePID.setVel(maxVel);
 
-  if (!refEncoder) {
+  if (!refEncoder && !refGroup) {
     // Reset the encoder to zero
     refMotor->resetPosition();                    
 
@@ -322,13 +388,15 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
       if (fabs(currAngle) >= fabs(target - tolBound) && fabs(currAngle) <= fabs(target + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
     }
+
+    refMotor->stop();
   }
-  else if (!refMotor) {
+  else if (!refMotor && !refEncoder) {
     // Reset the encoder to zero
-    refEncoder->resetPosition();                    
+    refGroup->resetPosition();                    
 
     while(breakout < breakoutCount){ // insert your conditional for when you want it to run (base it off of being always true)
-      currAngle = refEncoder->position(degrees);    // grabs current position 
+      currAngle = refGroup->position(degrees);    // grabs current position 
       error = target - currAngle;                   // grabs current error
       pctError = error / totalError * 100;          // calculate percent error of manuever (0 = end, 100 = beginning, 
 
@@ -353,8 +421,10 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
       if (fabs(currAngle) >= fabs(target - tolBound) && fabs(currAngle) <= fabs(target + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
     }
+
+    refGroup->stop();
   }
-  else {
+  else if ( !refGroup ) {
     // Reset the encoder to zero
     refEncoder->resetPosition();                    
 
@@ -384,7 +454,7 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
       if (fabs(currAngle) >= fabs(target - tolBound) && fabs(currAngle) <= fabs(target + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
     }
-  }
 
-  refMotor->stop(); // ensures that the motor stops so it doesn't draw extra power
+    refMotor->stop();
+  }
 }
