@@ -546,7 +546,7 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
 --- ODOMETRY THREAD CALLBACK---
 */
 
-void odomThreadSetup(botOdom *botObject, rotation *verticalDW, rotation *horizontalDW, inertial *imuObject){
+void odomCallBack(botOdom *botObject, rotation *verticalDW, rotation *horizontalDW, inertial *imuObject){
   while(true){
     // Insert for your robot accordingly for the thread
     // --- Updating the Position and heading of the robot (use custom "update" for your system)

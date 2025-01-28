@@ -162,6 +162,6 @@ class controlMotor {
 ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 */
 // For odometry updates
-void odomThreadSetup(botOdom *botObject, rotation *verticalDW, rotation *horizontalDW, inertial *imuObject);
+void odomTrackCall(botOdom *botObject, rotation *verticalDW, rotation *horizontalDW, inertial *imuObject);
 
 #endif // End of File //

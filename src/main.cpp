@@ -29,8 +29,18 @@ controlMotor yourMotor(&testmotor);
 controlMotor yourMotorGroup(&motors);
 chassis yourDB(&leftMotors, &rightMotors, &IMU);
 
+
+/*
+███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+█████╗  ██║   ██║██╔██╗ ██║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+██╔══╝  ██║   ██║██║╚██╗██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+*/
+
 void odomUpdate ( void ){
-  odomThreadSetup(&yourRobot, &vDead, &hDead, &IMU);
+  odomTrackCall(&yourRobot, &vDead, &hDead, &IMU);
 }
 
 
