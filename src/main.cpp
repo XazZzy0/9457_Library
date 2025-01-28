@@ -6,6 +6,7 @@ using namespace vex;
 competition Competition;
 brain Brain;
 
+motor testmotor = motor(PORT5, ratio18_1, false);
 motor LF = motor(PORT19, ratio6_1, true);
 motor LM = motor(PORT8, ratio6_1, true);
 motor LR = motor(PORT4, ratio6_1, false);
@@ -20,6 +21,7 @@ inertial IMU = inertial(PORT3);
 
 // === Global Library specification ===
 botOdom botTracking;
+controlMotor tempMotor1(&testmotor);
 controlMotor tempMotor(&motors);
 chassis Chassy(&leftMotors, &rightMotors, &IMU);
 
@@ -128,11 +130,14 @@ void userControl( void ) {
 }
 
 void autoControl( void ) {
-  Chassy.pointTurn( 90, 70 );
-  Chassy.pointTurn( 1, 30 );
+  //Chassy.pointTurn( 90, 70 );
+  //Chassy.pointTurn( 1, 30 );
 }
 
 int main() {
+  testmotor.setPosition(360, rotationUnits::deg);
+  tempMotor1.pidRotate(-800, 100);
+
   pre_auton();
 
   Competition.drivercontrol( autoControl );

@@ -47,7 +47,7 @@ class PID {
  * THIS IS A ODOMETRY OBJECT, CREATE A NEW INSTANCE WHENEVER YOU WOULD LIKE A UNIQUE RESPONSE.
  * MULTI-THREADING WILL NEED TO BE UTILIZED IN THE BACKGROUND IF PROPER IMPLEMENTATION IS DESIRED.
  * THE BACK-END MATH IS BASED ON EUCLIDIAN DYNAMICS AND MAY BE PRONE TO ERROR. THIS IS FOR A 
- * BASIC CONTROL SYSTEM AND DEALS WITH ALL THE BACKEND UPDATING IN TERMS OF TOTALS/ABSOLUTES.
+ * BASIC CONTROL SYSTEM AND DEALS WITH ALL THE BACK-END UPDATING IN TERMS OF TOTALS/ABSOLUTES.
  * IMU.ROTATION() WILL NEED TO BE CALLED ALONG WITH MOTOR.POSITION(), INSTEAD OF IMU.HEADING()
  * AND MOTOR.ANGLE().
  * ==============================================================================================================================================================================
@@ -56,6 +56,8 @@ class botOdom {
     private:
         inertial *IMU;
         rotation *vWheel, *vLWheel, *vRWheel, *hWheel;
+
+        bool init = false;                                               // Verifies bot initalization
 
         double vWheel_Diameter, hWheel_Diameter;
         double baseWidth, baseLength; 
@@ -69,6 +71,8 @@ class botOdom {
         
         botOdom( void );
         botOdom( rotation *vertWheel, double offset_V, rotation *horWheel, double offset_H );
+
+        void initializeSystem( void );
 
         void setVerticalDiameter( double Diameter );
         void setHorizontalDiameter( double Diameter );
@@ -89,22 +93,26 @@ class botOdom {
  */
 class chassis { // Used for pathing manuevers with Odometry
     private:
-        motor_group *left, *right;   // a motor_group containing the left and right side of the drivebase
-        inertial *IMU;       // an inertial class containing the IMU info
-        double drivePID[3] = {1.1, 0, 0.225};
-        double turnPID[3] = {0.7, 0.001, 0.225};
-        int updateRate = 50.0;
+        motor_group *left, *right;              // a motor_group containing the left and right side of the drivebase
+        inertial *IMU;                          // an inertial class containing the IMU info
+        double drivePID[3] = {1.1, 0, 0.225};   // the PID Coeff storage for driving manuevers.
+        double turnPID[3] = {0.7, 0.01, 0.225}; // the PID Coeff storage for turning manuevers.
+        int updateRate = 50.0;                  // the update rate of the system.
 
     public:
         chassis( motor_group *leftGroup, motor_group *rightGroup, inertial *botIMU );
 
-        void driveFwd( double dist, double vel, bool waitCompletion = true );
-        void pointTurn(double degrees, double vel, int breakoutCount = 12, bool waitCompletion = true);
+        void setDrivePID(double pTerm  = 1.1, double iTerm = 0, double dTerm = 0.225);
+        void setTurnPID(double pTerm  = 0.7, double iTerm = .01, double dTerm = 0.225);
+
+        void driveFwd( double dist, double vel, bool waitForCompletion = true );
+        void pointTurn(double degrees, double vel, int breakoutCount = 12, bool waitForCompletion = true);
 };
 
 /** ==============================================================================================================================================================================
  * @class controlMotor
  * @details 
+ * 
  * 
  * [Insert description here]
  * ==============================================================================================================================================================================
@@ -115,7 +123,7 @@ class controlMotor {
         motor *refMotor;                        // pointer to specific motor which will be controlled
         motor_group *refGroup;                  // pointer to specific motor group which will be controlled
         rotation *refEncoder;                   // pointer to the specific encoder.
-        double PID_Coef[3] = {1.1, 0, 0.225};   // the PID Coeff callback for the specific manuever. 
+        double PID_Coef[3] = {1.1, 0, 0.225};   // the PID Coeff storage for the specific manuever. 
         int updateRate = 50.0;                  // the update Rate of the controller (max is 100 hz)
 
     public:
