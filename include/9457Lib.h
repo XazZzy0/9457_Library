@@ -17,13 +17,25 @@ using namespace vex;
 #define DEG2RAD     PI/180  // Degrees to Radians
 #define RAD2DEG     180/PI  // Radians to Degrees
 
+
+
+/*
+ ██████╗██╗      █████╗ ███████╗███████╗███████╗███████╗
+██╔════╝██║     ██╔══██╗██╔════╝██╔════╝██╔════╝██╔════╝
+██║     ██║     ███████║███████╗███████╗█████╗  ███████╗
+██║     ██║     ██╔══██║╚════██║╚════██║██╔══╝  ╚════██║
+╚██████╗███████╗██║  ██║███████║███████║███████╗███████║
+ ╚═════╝╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚══════╝
+*/
+
 /** ==============================================================================================================================================================================
  * @class PID
  * @details 
  * 
- * [Insert description here]
+ * The PID: A multi-purpose feedback control system which is based on positional error.
  * ==============================================================================================================================================================================
  */
+// The PID: A multi-purpose feedback control system which is based on positional error.
 class PID {
     private: 
         double Kp = 0.0, Ki = 0, Kd = 0.0;        //coefficients
@@ -52,20 +64,20 @@ class PID {
  * AND MOTOR.ANGLE().
  * ==============================================================================================================================================================================
  */
+// This is a class used to declare robot odometry, it is used for robot tracking.
 class botOdom {
     private:
         inertial *IMU;
         rotation *vWheel, *vLWheel, *vRWheel, *hWheel;
 
-        bool init = false;                                               // Verifies bot initalization
-
-        double vWheel_Diameter, hWheel_Diameter;
-        double baseWidth, baseLength; 
+        double vWheel_Diameter = 0, hWheel_Diameter = 0;
+        double baseWidth = 0, baseLength = 0; 
         double vOffset = 0, hOffset = 0;                                 // Variables to represent the deadwheel offsets
         double vPrev = 0, vLPrev = 0, vRPrev = 0, hPrev = 0, tPrev = 0;  // Variables to represent the previous encoder positions
         double vdot = 0, hdot = 0, tdot = 0;                             // Variables for the rotational velocity deltas, (deg/hz, deg/hz, Rad/hz) [ROBOT FRAME]
 
     public:
+        bool isCalibrated = false;                                       // Verifies bot initalization
         double update_hz = 50;
         double xG, yG, tG; // (In, In, Rad) [INERTIAL FRAME]
         
@@ -80,8 +92,7 @@ class botOdom {
         void setPose( double xPose, double yPose, double tPose );
         void setRate( double rate_hz );
 
-        void update( double vWheel, double hWheel, double angle );
-        
+        void trackLocation( double vWheel, double hWheel, double angle );
 };
 
 /** ==============================================================================================================================================================================
@@ -95,6 +106,7 @@ class chassis { // Used for pathing manuevers with Odometry
     private:
         motor_group *left, *right;              // a motor_group containing the left and right side of the drivebase
         inertial *IMU;                          // an inertial class containing the IMU info
+        botOdom *ODOM;                          // an inertial class
         double drivePID[3] = {1.1, 0, 0.225};   // the PID Coeff storage for driving manuevers.
         double turnPID[3] = {0.7, 0.01, 0.225}; // the PID Coeff storage for turning manuevers.
         int updateRate = 50.0;                  // the update rate of the system.
@@ -140,5 +152,16 @@ class controlMotor {
         void pidAccel( double target, double maxVel, double accelPeriod = 15, double minVel = 10, int breakoutCount = 12 );
         void pidTurn( double target, double maxVel, int breakoutCount = 12 );
 };
+
+/*
+███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+█████╗  ██║   ██║██╔██╗ ██║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+██╔══╝  ██║   ██║██║╚██╗██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+*/
+// For odometry updates
+void odomThreadSetup(botOdom *botObject, rotation *verticalDW, rotation *horizontalDW, inertial *imuObject);
 
 #endif // End of File //
