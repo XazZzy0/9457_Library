@@ -41,6 +41,7 @@ class PID {
         double Kp = 0.0, Ki = 0, Kd = 0.0;        //coefficients
         double integral = 0.0, prevError = 0.0;   //integral, previous error (for "I" and "D" coeff.)
         double maxPower = 100.0;                  // max output of the motors (typically 100%)
+        double minPower = 0.0;                    // minimum output of the motors
 
     public:
         double Pterm = 0.0, Iterm = 0.0, Dterm = 0.0; // Initalizing external access variables
@@ -50,6 +51,7 @@ class PID {
         double calculate ( double error );
         void reset( void );
         void setVel( double toPower );
+        void setMinVel( double toMinPower );
 };
 
 /** ==============================================================================================================================================================================
@@ -107,18 +109,21 @@ class chassis { // Used for pathing manuevers with Odometry
         motor_group *left, *right;              // a motor_group containing the left and right side of the drivebase
         inertial *IMU;                          // an inertial class containing the IMU info
         botOdom *ODOM;                          // an inertial class
-        double drivePID[3] = {1.1, 0, 0.225};   // the PID Coeff storage for driving manuevers.
-        double turnPID[3] = {0.7, 0.01, 0.225}; // the PID Coeff storage for turning manuevers.
+        double drivePID[3] = {0.675, 0, 0.225};   // the PID Coeff storage for driving manuevers.
+        double turnPID[3] = {0.55, 0.0, 0.225}; // the PID Coeff storage for turning manuevers.
         int updateRate = 50.0;                  // the update rate of the system.
 
     public:
         chassis( motor_group *leftGroup, motor_group *rightGroup, inertial *botIMU );
 
-        void setDrivePID(double pTerm  = 1.1, double iTerm = 0, double dTerm = 0.225);
-        void setTurnPID(double pTerm  = 0.7, double iTerm = .01, double dTerm = 0.225);
+        void setODOM(botOdom *botODOM);
+        void initialize( void );
+        void setDrivePID(double pTerm  = 0.85, double iTerm = 0, double dTerm = 0.225);
+        void setTurnPID(double pTerm  = 0.6, double iTerm = 0, double dTerm = 0.225);
 
-        void driveFwd( double dist, double vel, bool waitForCompletion = true );
-        void pointTurn(double degrees, double vel, int breakoutCount = 12, bool waitForCompletion = true);
+        void driveFwd( double dist, double vel, double minVel = 3, int brakoutCount = 8, bool waitForCompletion = true );
+        void driveAccel( double dist, double vel, double accelPeriod = 15, double minVel = 3, int breakoutCount = 8, bool waitForCompletion = true);
+        void pointTurn(double degrees, double vel, double minVel = 3, int breakoutCount = 12, bool waitForCompletion = true);
 };
 
 /** ==============================================================================================================================================================================
@@ -148,7 +153,7 @@ class controlMotor {
         void setRate( double rate_hz ); // Set the update rate of the system
         
         void testSpin( void );
-        void pidRotate( double target, double maxVel, int breakoutCount = 12 );
+        void pidRotate( double target, double maxVel, int breakoutCount = 6 );
         void pidAccel( double target, double maxVel, double accelPeriod = 15, double minVel = 10, int breakoutCount = 12 );
         void pidTurn( double target, double maxVel, int breakoutCount = 12 );
 };

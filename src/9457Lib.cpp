@@ -28,6 +28,14 @@ double PID::calculate( double error ) {
   if (output > maxPower)          { output = maxPower; }
   else if (output < -maxPower)    { output = -maxPower; }
 
+  // updates to min speed if there is one
+  if (minPower != 0){
+    if (fabs(output) < minPower){
+      if (signbit(output)) {output = -minPower;}
+      else                 {output = minPower;}
+    }
+  }
+
   // sets the previous error to the new one
   prevError = error;
 
@@ -45,6 +53,12 @@ void PID::setVel(double toPower){
 
   maxPower = fabs(toPower); // No negative signs for power, std to positive
 }
+
+void PID::setMinVel(double toMinPower){
+   if (fabs(toMinPower) > 100) { toMinPower = 100; } // Min speed is 100 pct - don't do this please
+
+    minPower = fabs(toMinPower); // No negative signs for power, std to positive
+  }
 
 /*
  ██████╗ ██████╗  ██████╗ ███╗   ███╗███████╗████████╗██████╗ ██╗   ██╗     ██████╗██╗      █████╗ ███████╗███████╗
@@ -172,6 +186,13 @@ chassis::chassis( vex::motor_group *leftGroup, vex::motor_group *rightGroup, vex
     {}
 
 
+void chassis::setODOM(botOdom *botODOM) { ODOM = botODOM; }
+
+void chassis::initialize( void ){
+  left->resetPosition();
+  right->resetPosition();
+}
+
 void chassis::setDrivePID( double pTerm, double iTerm, double dTerm ){
   drivePID[0] = pTerm;
   drivePID[1] = iTerm;
@@ -184,13 +205,109 @@ void chassis::setTurnPID( double pTerm, double iTerm, double dTerm ){
   turnPID[2] = dTerm;
 }
 
-void chassis::driveFwd( double dist, double vel, bool waitCompletion ) {
-  //do nothing, for right now
+void chassis::driveFwd( double dist, double vel, double minVel, int breakoutCount, bool waitCompletion ) {
+  // Initialize local PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
+  PID anglePID(drivePID[0], drivePID[1], drivePID[2]); // create PID instance
+  int update_hz = updateRate;
+  double tolBound = 10; 
+  int breakout = 0;
+  
+  double startDist = (left->position(deg) + right->position(deg))/2;     // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running 
+  double currDist = 0;                                                   // initialize Encoder holder variable                            
+  double totalError = fabs( dist );                                      // initialize absolute total error of manuever
+  double error = dist;                                                   // initialize error
+  double toPower;                                                        // initialize the speed variable
+  double pctError = error / totalError * 100;                            // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
+
+  anglePID.setVel(vel);
+  anglePID.setMinVel(minVel);
+
+  while(breakout < breakoutCount) {
+    if (ODOM){  // dist will use inches
+    
+    }
+    else{       // dist will use degrees
+      currDist = (left->position(deg) + right->position(deg))/2;
+      
+      error = (startDist + dist) - currDist;
+      pctError = error / totalError * 100;
+
+      toPower = anglePID.calculate( pctError );
+      
+      // debugging purposes - uncomment below if needed
+      printf("currROT: %.2f, targetROT(lower): %.2f, (upper): %.2f, --%i \n" , (left->position(deg) + right->position(deg))/2, startDist+dist-tolBound, startDist+dist+tolBound, breakout);
+      //printf("Point turn --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
+
+      left->spin( fwd, toPower, velocityUnits::pct );
+      right->spin( fwd, toPower, velocityUnits::pct );
+
+      task::sleep( 1000 / update_hz );
+
+      if (currDist >=  (startDist + dist) - tolBound && currDist <= (startDist + dist) + tolBound) { ++breakout; }
+      else { breakout = 0; }
+    }
+  }
+
+  left->stop();
+  right->stop();
 }
 
-void chassis::pointTurn( double angle, double vel, int breakoutCount, bool waitForCompletion ) {
+void chassis::driveAccel( double dist, double vel, double accelPeriod, double minVel, int breakoutCount, bool waitCompletion ) {
   // Initialize local PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
-  PID anglePID(turnPID[0], turnPID[1], turnPID[2]);
+  PID anglePID(drivePID[0], drivePID[1], drivePID[2]); // create PID instance
+  int update_hz = updateRate;
+  double tolBound = 10; 
+  int breakout = 0;
+  
+  double startDist = (left->position(deg) + right->position(deg))/2;     // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running 
+  double currDist = 0;                                                   // initialize Encoder holder variable                            
+  double totalError = fabs( dist );                                      // initialize absolute total error of manuever
+  double error = dist;                                                   // initialize error
+  double toPower;                                                        // initialize the speed variable
+  double pctError = error / totalError * 100;                            // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
+
+  anglePID.setVel(vel);
+  anglePID.setMinVel(minVel);
+
+  while(breakout < breakoutCount) {
+    if (ODOM){  // dist will use inches
+    
+    }
+    else{       // dist will use degrees
+      currDist = (left->position(degrees) + right->position(degrees))/2;    // grabs current position 
+      error =  (startDist + dist) - currDist;                   // grabs current error
+      pctError = error / totalError * 100;          // calculate percent error of manuever (0 = end, 100 = beginning, 
+
+      if (100 - fabs(pctError) <= accelPeriod) { // Acceleration Period
+        if (pctError > 0){ // fwd
+          toPower = ((100-fabs(pctError))/accelPeriod) * (vel-minVel) + minVel; // kickstart the Accel/PID at minVel (fwd)
+        }
+        else { // rev
+          toPower = -((100-fabs(pctError))/accelPeriod) * (vel-minVel) - minVel; // kickstart the Accel/PID at minVel (rev)
+        }  
+      }
+      else { toPower = anglePID.calculate(pctError); } // Standard PID response
+
+      // uncomment statement below to debug
+      //printf("target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
+      
+      left->spin(fwd, toPower, velocityUnits::pct);   // spin the motor (using voltage)
+      right->spin(fwd, toPower, velocityUnits::pct);   // spin the motor (using voltage)
+
+      task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
+
+      if ((currDist >= (startDist + dist) - tolBound) && (currDist <= (startDist + dist) + tolBound)){ ++breakout; } // Count up on the breakout period
+      else { breakout = 0; }
+    }
+  }
+
+  left->stop();
+  right->stop();
+}
+
+void chassis::pointTurn( double angle, double vel, double minVel, int breakoutCount, bool waitForCompletion ) {
+  // Initialize local PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
+  PID anglePID(turnPID[0], turnPID[1], turnPID[2]); // create PID instancey
   int update_hz = updateRate;
   double tolBound = 3; 
   int breakout = 0;
@@ -204,6 +321,7 @@ void chassis::pointTurn( double angle, double vel, int breakoutCount, bool waitF
 
   // Set the motor power to the specified amount
   anglePID.setVel(vel);
+  anglePID.setMinVel(minVel);                       
 
   while( breakout < breakoutCount ) {
     currAngle = IMU->rotation( degrees );
@@ -213,6 +331,7 @@ void chassis::pointTurn( double angle, double vel, int breakoutCount, bool waitF
     toPower = anglePID.calculate( pctError );
     
     // debugging purposes - uncomment below if needed
+    //printf("currROT: %.2f, targetROT(lower): %.2f, (upper): %.2f \n" , IMU->rotation( degrees ), startAngle+angle-tolBound, startAngle+angle+tolBound);
     //printf("Point turn --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
 
     left->spin( fwd, toPower, velocityUnits::pct );
@@ -220,7 +339,9 @@ void chassis::pointTurn( double angle, double vel, int breakoutCount, bool waitF
 
     task::sleep( 1000 / update_hz );
 
-    if (fabs( currAngle ) >= fabs( angle - tolBound ) && fabs( currAngle ) <= fabs( angle + tolBound ) ) { ++breakout; }
+
+
+    if (currAngle >=  (startAngle + angle) - tolBound && currAngle <= (startAngle + angle) + tolBound) { ++breakout; }
     else { breakout = 0; }
   }
 
@@ -311,7 +432,7 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
 
       task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
 
-      if (fabs(currAngle) >= fabs((startTic + target) - tolBound) && fabs(currAngle) <= fabs((startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
+      if ((currAngle >= (startTic + target) - tolBound) && (currAngle <= (startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
     }
 
@@ -335,7 +456,7 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
 
       task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
 
-      if (fabs(currAngle) >= fabs((startTic + target) - tolBound) && fabs(currAngle) <= fabs((startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
+      if ((currAngle >= (startTic + target) - tolBound) && (currAngle <= (startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
     }
 
@@ -359,7 +480,7 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
 
       task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
 
-      if (fabs(currAngle) >= fabs((startTic + target) - tolBound) && fabs(currAngle) <= fabs((startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
+      if ((currAngle >= (startTic + target) - tolBound) && (currAngle <= (startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
     }
 
@@ -382,7 +503,7 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
 
       task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
 
-      if (fabs(currAngle) >= fabs((startTic + target) - tolBound) && fabs(currAngle) <= fabs((startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
+      if ((currAngle >= (startTic + target) - tolBound) && (currAngle <= (startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
     }
 
@@ -425,16 +546,16 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
       else { toPower = anglePID.calculate(pctError); } // Standard PID response
 
       // uncomment statement below to debug
-      printf("target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
+     // printf("target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
       
       refMotor->spin(fwd, toPower, velocityUnits::pct);   // spin the motor (using voltage)
 
       task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
 
-      if (fabs(currAngle) >= fabs((startTic + target) - tolBound) && fabs(currAngle) <= fabs((startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
+      if ((currAngle >= (startTic + target) - tolBound) && (currAngle <= (startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
 
-      printf("%i \t %f \t %f \n", breakout, fabs((startTic + target) - tolBound), fabs((startTic + target) + tolBound));
+      //printf("%i \t %f \t %f \n", breakout, fabs((startTic + target) - tolBound), fabs((startTic + target) + tolBound));
     }
 
     refMotor->stop();
@@ -464,7 +585,7 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
 
       task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
 
-      if (fabs(currAngle) >= fabs((startTic + target) - tolBound) && fabs(currAngle) <= fabs((startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
+      if ((currAngle >= (startTic + target) - tolBound) && (currAngle <= (startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
     }
 
@@ -495,7 +616,7 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
 
       task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
 
-      if (fabs(currAngle) >= fabs((startTic + target) - tolBound) && fabs(currAngle) <= fabs((startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
+      if ((currAngle >= (startTic + target) - tolBound) && (currAngle <= (startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
     }
 
@@ -526,7 +647,7 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
 
       task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
 
-      if (fabs(currAngle) >= fabs((startTic + target) - tolBound) && fabs(currAngle) <= fabs((startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
+      if ((currAngle >= (startTic + target) - tolBound) && (currAngle <= (startTic + target) + tolBound)){ ++breakout; } // Count up on the breakout period
       else { breakout = 0; }
     }
 

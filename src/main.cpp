@@ -6,6 +6,7 @@ using namespace vex;
 
 // === Object specification ===
 competition Competition;
+controller Controller(primary);
 brain Brain;
 
 motor testmotor = motor(PORT5, ratio18_1, false);
@@ -15,6 +16,7 @@ motor LR = motor(PORT4, ratio6_1, false);
 motor RF = motor(PORT18, ratio6_1, false);
 motor RM = motor(PORT1, ratio6_1, true);
 motor RR = motor(PORT2, ratio6_1, false);
+motor tempMotor = motor(PORT7, ratio18_1, false);
 motor_group leftMotors = motor_group( LF, LM, LR );
 motor_group rightMotors = motor_group( RF, RM, RR );
 motor_group motors = motor_group( LF, LM, LR, RF, RM, RR );
@@ -65,18 +67,39 @@ void pre_auton ( void ){
 
 void userControl( void ) {
   while( true ) {
-    task::sleep(100);
+    
+
+  if(Controller.ButtonR1.pressing()){
+    tempMotor.spin(fwd);
+  }
+  else if (Controller.ButtonR2.pressing()){
+    tempMotor.spin(reverse);
+  }
+  else{
+    tempMotor.stop();
+  }
+
+  task::sleep(20);
   }
 }
 
 void autoControl( void ) {
+  //initalize
   yourRobot.setPose(0, 0, 0);
+  yourDB.initialize();
+
+  //move
+  yourDB.setDrivePID(2.55, 0, .225);
+  yourDB.driveAccel(9500, 100, 15.0, 3.0);
+  yourDB.pointTurn(175, 50);
+  yourDB.driveAccel(9500, 100, 15.0, 3.0);
+  
 }
 
 int main() {
   pre_auton();
 
-  Competition.drivercontrol( autoControl );
+  Competition.drivercontrol( userControl );
   Competition.autonomous( autoControl );
   
   //thread Odometry = thread( odomUpdate ); 
