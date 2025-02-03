@@ -36,7 +36,7 @@ chassis yourDB(&leftMotors, &rightMotors, &IMU);
 // Global storage variables
 int lbState = 0;
 int lbAngle[4] = { 0, 35, 160, 70 }; // (idle, holding, scoring, idle carry)
-bool idleCarry = false;
+bool idleCarry = false, scoreIndex = false;
 
 /*
 ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
@@ -65,7 +65,8 @@ void lbUpdate ( void ){
       prevState = lbState;
     }
 
-    switch(lbState){
+    if (!scoreIndex){
+      switch(lbState){
       case (0): anglePID.adjPID(1.5, 0, .225);
       break;
 
@@ -77,7 +78,12 @@ void lbUpdate ( void ){
 
       case (3): anglePID.adjPID(.4, 0, .225);
       break;
+      }
+    } 
+    else {
+      anglePID.adjPID(1.1, 0, .225);
     }
+    
 
     currPos = lbRot.position( deg );
     
@@ -123,23 +129,27 @@ void userControl( void ) {
     if (lbState == 3 && idleCarry) { // idle carry stage
       lbState = 2; 
       idleCarry = false;
+      scoreIndex = false;
       continue;
     } 
 
     lbState++;
     
     if (lbState > 2 ) { 
-      lbState = 0;
+      lbState = 1;
       idleCarry = false; 
+      scoreIndex = true;
     }
   } 
   else if (Controller.ButtonLeft.PRESSED) {
     lbState = 0;
     idleCarry = false;
+    scoreIndex = false;
   }
   else if (Controller.ButtonDown.PRESSED){
     lbState = 3;
     idleCarry = true;
+    scoreIndex = false;
   }
 
   task::sleep(20);
