@@ -43,6 +43,12 @@ double PID::calculate( double error ) {
   return output;
 }
 
+void PID::adjPID(double kP, double kI, double kD){
+  Kp = kP;
+  Ki = kI;
+  Kd = kD;
+}
+
 void PID::reset( void ){
   integral = 0;
   prevError = 0;

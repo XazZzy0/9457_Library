@@ -49,6 +49,7 @@ class PID {
         PID(double kp, double ki, double kd);
 
         double calculate ( double error );
+        void adjPID(double kP, double kI, double kD);
         void reset( void );
         void setVel( double toPower );
         void setMinVel( double toMinPower );
