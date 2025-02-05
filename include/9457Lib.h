@@ -1,3 +1,44 @@
+/* 
+--- EVERYONE: ---
+
+This code is for reference only, direct use of this library during a competition is not allowed!!!
+
+If used/distributed by the students (such as copy and pasting), the decision is not supported by the 
+coaches or our organization. The student takes full responsibility for any punishment that may occur 
+proceeding such instance.
+
+This is not intended to be distributed as a general use-case library. Its purpose is to demonstrate 
+high level engineering concepts during practice such as:
+ - Object oriented programming
+ - Custom library creation
+ - Feedback control systems
+ - Sensor filtering
+ - Odometry
+ - Pure pursuit 
+and provide examples for how robotics teams can use such concepts to succeed and solve problems in and 
+out of competition. All code must and will be written by the students. It is our full intention to abide
+by the REC Foundation student-centered rules: 
+
+ - https://kb.roboticseducation.org/hc/en-us/articles/5449868745367-Student-Centered-Policy 
+ - https://www.vexforum.com/t/code-templates-and-student-centered-policy-discussion/115567/15
+ 
+-----------------------------------------------------------------------------------------------------------------------------
+
+I do not approve of the stance that competition robotics has taken with open-source libraries and I believe 
+it goes against the student-centered policies (especially since many were written by "adults" - per VEX 
+rulebook definition) such as Lemlib, jar template, etc... The rules are unenforced and abused and it has devalued 
+the effort that many other very talented teams have put into their programming - and students are unable to re-write and 
+explain these concepts. (See below for REC ruling)
+"Students use a custom library developed by another team, but cannot create their own custom libraries."
+
+One does need to be written one in order to properly document it and verify it works, Hence, this is given as a 
+line by line general use-case and is fully commented so a student may reverse engineer and better understand the 
+process workflow for these concepts. 
+
+~ Signed by: Jacob Wood [2025-02-05 : 13:26], Change Rev: Internal Licensing Agreements
+
+*/
+
 #ifndef EASTLIBRARY // Header guard
 #include "vex.h"
 using namespace vex;
