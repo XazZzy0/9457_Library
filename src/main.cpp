@@ -29,7 +29,7 @@ controlMotor yourMotor(&testmotor);
 controlMotor yourMotorGroup(&motors);
 chassis yourDB(&leftMotors, &rightMotors, &IMU);
 
-// Global storage variables
+// === Global storage variables ===
 double tempVar = 0;
 
 /*
