@@ -2,8 +2,6 @@
 #include "9457Lib.h"
 using namespace vex;
 
-//USE THIS AS A GUIDE MOVING FORWARD, CHANGE MOTORS AND NAMES APPROPRIATELY FOR YOUR TEAM
-
 // === Object specification ===
 competition Competition;
 controller Controller(primary);
