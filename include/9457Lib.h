@@ -99,11 +99,11 @@ class PID {
         
         PID(double kp, double ki, double kd);         // A constructor - this is how you specify creating the object
 
-        double calculate ( double error );             // calculate the PID response
-        void reset( void );                            // reset the integral and previous error
-        void adjPID(double kP, double kI, double kD);  // adjust the objects PID gain terms
-        void adjWindup( double wTerm = 100.0 );        // adjust the windup term (default to 100)
-        void setVel( double toPower );                 // set the maximum velocity of the response
+        double calculate ( double error );                   // calculate the PID response
+        void reset( void );                                  // reset the integral and previous error
+        void adjPID(double kP, double kI, double kD);        // adjust the objects PID gain terms
+        void adjWindup( double wTerm = 100.0 );              // adjust the windup term (default to 100)
+        void setVel( double toMinPower, double toMaxPower ); // set the maximum velocity of the response
 };
 
 /** ==============================================================================================================================================================================
@@ -175,7 +175,8 @@ class chassis { // Used for pathing manuevers with Odometry
 
         void driveFwd( double dist, double vel, double minVel = 3, int brakoutCount = 8, bool waitForCompletion = true ); // The PID drive forward command 
         void driveAccel( double dist, double vel, double accelPeriod = 15, double minVel = 3, int breakoutCount = 8, bool waitForCompletion = true); // The PID accelerate command 
-        void pointTurn(double degrees, double vel, double minVel = 3, int breakoutCount = 12, bool waitForCompletion = true); // The PID point turn command 
+        void pointTurn( double degrees, double vel, double minVel = 3, int breakoutCount = 12, bool waitForCompletion = true); // The PID point turn command 
+        void swingTurn( double rVel, double lVel, int runTime_ms );
 };
 
 /** ==============================================================================================================================================================================
@@ -205,9 +206,9 @@ class controlMotor {
         void setRate( double rate_hz ); // Set the update rate of the system
         
         void testSpin( void ); // a test spin function
-        void pidRotate( double target, double maxVel, int breakoutCount = 6 ); // a PID rotate command
-        void pidAccel( double target, double maxVel, double accelPeriod = 15, double minVel = 10, int breakoutCount = 12 ); // a PID acceleration command
-        void pidTurn( double target, double maxVel, int breakoutCount = 12 ); // a PID turn command
+        void pidRotate( double target, double maxVel, double minVel = 3.0, int breakoutCount = 6 ); // a PID rotate command
+        void pidAccel( double target, double maxVel, double minVel = 3.0, double accelPeriod = 15.0, int breakoutCount = 12 ); // a PID acceleration command
+        void pidTurn( double target, double maxVel, double minVel = 3.0, int breakoutCount = 12 ); // a PID turn command
 };
 
 /*

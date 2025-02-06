@@ -67,8 +67,8 @@ double PID::calculate( double error ) {
   Dterm = Kd * (error - prevError); // This is the D response - acts like a Dampener
 
  // Preventing integral windup - when the integral term gets too high and the system cannot respond to the next manuever because of the Iterm.
- if (integral > windup)      { integral = windup};
- else if (integral < windup) { integral = -windup};
+ if (integral > windup)      { integral = windup; }
+ else if (integral < windup) { integral = -windup; }
  
   double output = Pterm + Iterm + Dterm; // Sum all of the values - the PID response
 
@@ -112,7 +112,7 @@ void PID::setVel(double toMinPower, double toMaxPower){
   if (toMinPower > toMaxPower) { return; } 
 
   minPower = fabs(toMinPower); // No negative signs for power, standard is positive
-  maxPower = fabs(toPower); // No negative signs for power, standard is positive
+  maxPower = fabs(toMaxPower); // No negative signs for power, standard is positive
   return;
 }
 
@@ -262,11 +262,11 @@ void chassis::setTurnPID( double pTerm, double iTerm, double dTerm ){
   turnPID[2] = dTerm;
 }
 
-void chassis::driveFwd( double dist, double vel, double minVel, int breakoutCount, bool waitCompletion ) {
+void chassis::driveFwd( double dist, double maxVel, double minVel, int breakoutCount, bool waitCompletion ) {
   // Initialize local PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
   PID anglePID(drivePID[0], drivePID[1], drivePID[2]); // create PID instance
   int update_hz = updateRate;
-  double tolBound = 10, double tolBound_in = .1; 
+  double tolBound = 10, tolBound_in = .1; 
   int breakout = 0;
   
   double startDist = (left->position(deg) + right->position(deg))/2;     // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running 
@@ -276,7 +276,7 @@ void chassis::driveFwd( double dist, double vel, double minVel, int breakoutCoun
   double toPower;                                                        // initialize the speed variable
   double pctError = error / totalError * 100;                            // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
 
-  anglePID.setVel(minVel, vel);         // Set the Minimum and Maximum Velocity of the response
+  anglePID.setVel(minVel, maxVel);         // Set the Minimum and Maximum Velocity of the response
 
  //if (ODOM) { startDist = ODOM->vWheel->position() }
 
@@ -431,10 +431,10 @@ void chassis::swingTurn( double rVel, double lVel, int runTime_ms){ // Example o
   do{
     right->spin( fwd, rVel, velocityUnits::pct );
     left->spin( fwd, lVel, velocityUnits::pct );
-    task::sleep( 1000/update_hz );
-    elapsedTime =+ 1000/update_hz;
+    task::sleep( 1000/ updateRate );
+    elapsedTime =+ 1000/updateRate;
   }
-  while {elapsedTime < runTime_ms};
+  while (elapsedTime < runTime_ms);
 
  left->stop();
  right->stop();
@@ -491,7 +491,7 @@ void controlMotor::testSpin( void ){
   
 }
 
-void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
+void controlMotor::pidRotate( double target, double maxVel, double minVel, int breakoutCount ){
   // Initialize local PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
   PID anglePID(PID_Coef[0], PID_Coef[1], PID_Coef[2]);    // set PID response
   int update_hz = updateRate;                             // set the update rate;
@@ -504,7 +504,7 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
   double toPower;                                    // initialize the speed variable
   double pctError = error / totalError * 100;        // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
   
-  anglePID.setVel(minVel, vel);         // Set the Minimum and Maximum Velocity of the response
+  anglePID.setVel(minVel, maxVel);         // Set the Minimum and Maximum Velocity of the response
   
   if ( !refGroup && !refEncoder ) { // Single motor case, no encoder 
      double startTic = refMotor->position( degrees ); // Establish a reference point for your encoders
@@ -602,7 +602,7 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
   }
 }
 
-void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, double minVel, int breakoutCount ) {
+void controlMotor::pidAccel( double target, double maxVel, double minVel, double accelPeriod, int breakoutCount ) {
   // Initialize local PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
   PID anglePID(PID_Coef[0], PID_Coef[1], PID_Coef[2]);    // set PID response
   int update_hz = updateRate;                             // set the update rate;
@@ -615,7 +615,7 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
   double toPower;                                    // initialize the speed variable
   double pctError = error / totalError * 100;        // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
 
-  anglePID.setVel(minVel, vel);         // Set the Minimum and Maximum Velocity of the response
+  anglePID.setVel(minVel, maxVel);         // Set the Minimum and Maximum Velocity of the response
 
   if (!refEncoder && !refGroup) {
      double startTic = refMotor->position( degrees ); // Establish a reference point for your encoders                 
@@ -757,7 +757,7 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
 --- ODOMETRY THREAD CALLBACK---
 */
 
-void odomCallBack(botOdom *botObject, rotation *verticalDW, rotation *horizontalDW, inertial *imuObject){
+void odomTrackCall(botOdom *botObject, rotation *verticalDW, rotation *horizontalDW, inertial *imuObject){
   while(true){
     // Insert for your robot accordingly for the thread
     // --- Updating the Position and heading of the robot (use custom "update" for your system)
