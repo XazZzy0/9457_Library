@@ -268,7 +268,7 @@ void chassis::driveFwd( double dist, double vel, double minVel, int breakoutCoun
   // Initialize local PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
   PID anglePID(drivePID[0], drivePID[1], drivePID[2]); // create PID instance
   int update_hz = updateRate;
-  double tolBound = 10; 
+  double tolBound = 10, double tolBound_in = .1; 
   int breakout = 0;
   
   double startDist = (left->position(deg) + right->position(deg))/2;     // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running 
@@ -280,9 +280,28 @@ void chassis::driveFwd( double dist, double vel, double minVel, int breakoutCoun
 
   anglePID.setVel(minVel, vel);         // Set the Minimum and Maximum Velocity of the response
 
+ //if (ODOM) { startDist = ODOM->vWheel->position() }
+
   while(breakout < breakoutCount) {
     if (ODOM){  // dist will use inches
-    
+      /*currDist = (ODOM->vWheel->position() - startDist) / (PI*ODOM->vWheel_Diameter) ;
+      
+      error = dist - currDist;
+      pctError = error / totalError * 100;
+
+      toPower = anglePID.calculate( pctError );
+      
+      // debugging purposes - uncomment below if needed
+      printf("currROT: %.2f, targetROT(lower): %.2f, (upper): %.2f, --%i \n" , (left->position(deg) + right->position(deg))/2, startDist+dist-tolBound, startDist+dist+tolBound, breakout);
+      //printf("Point turn --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
+
+      left->spin( fwd, toPower, velocityUnits::pct );
+      right->spin( fwd, toPower, velocityUnits::pct );
+
+      task::sleep( 1000 / update_hz );
+
+      if (currDist >=   dist - tolBound_in && currDist <=  dist + tolBound_in) { ++breakout; }
+      else { breakout = 0; }*/
     }
     else{       // dist will use degrees
       currDist = (left->position(deg) + right->position(deg))/2;
@@ -308,6 +327,7 @@ void chassis::driveFwd( double dist, double vel, double minVel, int breakoutCoun
 
   left->stop();
   right->stop();
+  return;
 }
 
 void chassis::driveAccel( double dist, double vel, double accelPeriod, double minVel, int breakoutCount, bool waitCompletion ) {
@@ -360,6 +380,7 @@ void chassis::driveAccel( double dist, double vel, double accelPeriod, double mi
 
   left->stop();
   right->stop();
+  return;
 }
 
 void chassis::pointTurn( double angle, double vel, double minVel, int breakoutCount, bool waitForCompletion ) {
@@ -402,6 +423,24 @@ void chassis::pointTurn( double angle, double vel, double minVel, int breakoutCo
 
   left->stop();
   right->stop();
+  return;
+}
+
+
+void chassis::swingTurn( double rVel, double lVel, int runTime_ms){ // Example of a differential swing turn, default units for time is ms - change velocity for response.
+  int elapsedTime = 0;
+ 
+  do{
+    right->spin( fwd, rVel, velocityUnits::pct );
+    left->spin( fwd, lVel, velocityUnits::pct );
+    task::sleep( 1000/update_hz );
+    elapsedTime =+ 1000/update_hz;
+  }
+  while {elapsedTime < runTime_ms};
+
+ left->stop();
+ right->stop();
+ return;
 }
 
 
