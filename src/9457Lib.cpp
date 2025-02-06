@@ -61,12 +61,16 @@ PID::PID(double kp, double ki, double kd) : Kp(kp), Ki(ki), Kd(kd) {}
 
 // Calculate the PID response (expects a percentage input from 0-100)
 double PID::calculate( double error ) {
-  Pterm = Kp * error;
-  integral += error;
-  Iterm = Ki * integral; 
-  Dterm = Kd * (error - prevError);
+  Pterm = Kp * error;               // This is the P response - acts like a spring
+  integral += error;                // this is the I summation - totals the error over time
+  Iterm = Ki * integral;            // This is the I response - pushes error to 0 over time.
+  Dterm = Kd * (error - prevError); // This is the D response - acts like a Dampener
 
-  double output = Pterm + Iterm + Dterm; // Sum all of the values
+ // Preventing integral windup - when the integral term gets too high and the system cannot respond to the next manuever because of the Iterm.
+ if (integral > windup)      { integral = windup};
+ else if (integral < windup) { integral = -windup};
+ 
+  double output = Pterm + Iterm + Dterm; // Sum all of the values - the PID response
 
   // clamps the output
   if (output > maxPower)          { output = maxPower; }
@@ -91,24 +95,24 @@ void PID::adjPID(double kP, double kI, double kD){
   Kp = kP;
   Ki = kI;
   Kd = kD;
+  return;
 }
 
 void PID::reset( void ){
   integral = 0;
   prevError = 0;
+  return;
 }
 
-void PID::setVel(double toPower){
-  if (fabs(toPower) > 100) { toPower = 100; } // Max speed is 100 pct
+void PID::setVel(double toMinPower, double toMaxPower){
+  if (fabs(toMaxPower) > 100)  { toMaxPower = 100; } // Max speed is 100 pct
+  if (fabs(toMinPower) > 100)  { toMinPower = 100; } // Min speed is 100 pct - don't do this please
+  if (toMinPower > toMaxPower) { return; } 
 
-  maxPower = fabs(toPower); // No negative signs for power, std to positive
+  minPower = fabs(toMinPower); // No negative signs for power, standard is positive
+  maxPower = fabs(toPower); // No negative signs for power, standard is positive
+  return;
 }
-
-void PID::setMinVel(double toMinPower){
-   if (fabs(toMinPower) > 100) { toMinPower = 100; } // Min speed is 100 pct - don't do this please
-
-    minPower = fabs(toMinPower); // No negative signs for power, std to positive
-  }
 
 /*
  ██████╗ ██████╗  ██████╗ ███╗   ███╗███████╗████████╗██████╗ ██╗   ██╗     ██████╗██╗      █████╗ ███████╗███████╗
@@ -182,7 +186,7 @@ void botOdom::setRate ( double rate_hz ) {
   else                   { update_hz = rate_hz; }
 }
 
-  /* --- SYSTEM UPDATE 1 FUNCTION ---
+/* --- SYSTEM UPDATE 1 FUNCTION ---
 THIS IS HOW TO UPDATE THE ROBOT FRAME SO THAT THE X, Y, AND HEADING
 OF THE ROBOT IS ACCURATELY REPRESENTED.
 
@@ -197,17 +201,18 @@ vWheel_Diameter  -> Vertical Deadwheel Diameter (optional input)
 hWheel_Diameter  -> Horizontal Deadwheel Diameter (optional input) 
 */
 void botOdom::trackLocation( double vWheel, double hWheel, double angle ) {
-  tdot = (angle - tPrev)*(DEG2RAD);                          // change in heading from the previous position.  [Radians/hz]
+  tdot = (angle*DEG2RAD) - tPrev;                          // change in heading from the previous position.  [Radians/hz]
   vdot = (vWheel - vPrev)/360*PI*vWheel_Diameter;            // change in the x location from the previous position. [in/hz]
   hdot = (hWheel - hPrev)/360*PI*vWheel_Diameter;            // change in the y location from the previous position. [in/hz]
   if (tdot == 0) {tdot = 1E-8;};                             // prevent divide by zero errors 
 
+  // All the following calculations are taken from the Pilons position tracking document
   double lx = 2*sin(tdot/2)*(hdot/tdot + hOffset);  //Local (Robot) Odometry Frame shifted by tdot/2
   double ly = 2*sin(tdot/2)*(vdot/tdot + vOffset);  //Local (Robot) Odometry Frame shifted by tdot/2
                                                                                 
-  xG += (ly*cos(tG + tdot/2)) + (lx*sin(tG + tdot/2));     // update Inertial Frame [Inches]
-  yG += (ly*sin(tG + tdot/2)) - (lx*cos(tG + tdot/2));     // update Inertial Frame [Inches]
-  tG += tdot; 
+  xG += (ly*cos(tG + tdot/2)) + (lx*sin(tG + tdot/2));     // update Inertial Frame [Inches] - aka field frame
+  yG += (ly*sin(tG + tdot/2)) - (lx*cos(tG + tdot/2));     // update Inertial Frame [Inches] - aka field frame
+  tG += tdot*RAD2DEG; 
 
   if      (tG > 360) { tG = 0; }    // checks to see if the global is outside of normal bounds (over-travel)
   else if (tG < 0)   { tG = 360; }  // checks to see if the global is outside of normal bounds (under-travel)
@@ -269,8 +274,7 @@ void chassis::driveFwd( double dist, double vel, double minVel, int breakoutCoun
   double toPower;                                                        // initialize the speed variable
   double pctError = error / totalError * 100;                            // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
 
-  anglePID.setVel(vel);
-  anglePID.setMinVel(minVel);
+  anglePID.setVel(minVel, vel);         // Set the Minimum and Maximum Velocity of the response
 
   while(breakout < breakoutCount) {
     if (ODOM){  // dist will use inches
@@ -316,8 +320,7 @@ void chassis::driveAccel( double dist, double vel, double accelPeriod, double mi
   double toPower;                                                        // initialize the speed variable
   double pctError = error / totalError * 100;                            // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
 
-  anglePID.setVel(vel);
-  anglePID.setMinVel(minVel);
+  anglePID.setVel(minVel, vel);         // Set the Minimum and Maximum Velocity of the response
 
   while(breakout < breakoutCount) {
     if (ODOM){  // dist will use inches
@@ -369,9 +372,7 @@ void chassis::pointTurn( double angle, double vel, double minVel, int breakoutCo
   double toPower;                                   // initialize the speed variable
   double pctError = error / totalError * 100;       // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
 
-  // Set the motor power to the specified amount
-  anglePID.setVel(vel);
-  anglePID.setMinVel(minVel);                       
+  anglePID.setVel(minVel, vel);         // Set the Minimum and Maximum Velocity of the response                    
 
   while( breakout < breakoutCount ) {
     currAngle = IMU->rotation( degrees );
@@ -462,8 +463,7 @@ void controlMotor::pidRotate( double target, double maxVel, int breakoutCount ){
   double toPower;                                    // initialize the speed variable
   double pctError = error / totalError * 100;        // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
   
-  // Set the motor power to the specified amount
-  anglePID.setVel(maxVel);
+  anglePID.setVel(minVel, vel);         // Set the Minimum and Maximum Velocity of the response
   
   if ( !refGroup && !refEncoder ) { // Single motor case, no encoder 
      double startTic = refMotor->position( degrees ); // Establish a reference point for your encoders
@@ -574,8 +574,7 @@ void controlMotor::pidAccel( double target, double maxVel, double accelPeriod, d
   double toPower;                                    // initialize the speed variable
   double pctError = error / totalError * 100;        // initalize the percent error of the manuever (-100% or 100%, can be positve/negative for cw/ccw rotation)
 
-  // Set the motor power to the specified amount
-  anglePID.setVel( maxVel );
+  anglePID.setVel(minVel, vel);         // Set the Minimum and Maximum Velocity of the response
 
   if (!refEncoder && !refGroup) {
      double startTic = refMotor->position( degrees ); // Establish a reference point for your encoders                 
