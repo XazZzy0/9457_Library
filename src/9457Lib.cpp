@@ -104,9 +104,7 @@ void PID::adjPID(double kP, double kI, double kD){
   return;
 }
 
-void PID::adjWindup( double wTerm ){
-  windup = wTerm;
-}
+void PID::adjWindup( double wTerm ) { windup = wTerm; }
 
 void PID::setVel(double toMinPower, double toMaxPower){
   if (fabs(toMaxPower) > 100)  { toMaxPower = 100; } // Max speed is 100 pct
