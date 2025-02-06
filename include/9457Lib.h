@@ -124,14 +124,14 @@ class botOdom {
         inertial *IMU;                                                  // A pointer which holds the vex imu class
         rotation *vWheel, *vLWheel, *vRWheel, *hWheel;                  // pointers which hold the rotation wheels - can leave empty(null) if they do not exist!
 
-        double vWheel_Diameter = 0, hWheel_Diameter = 0;                 // Variables which specify the vert/horizontal wheel diameters
-        double baseWidth = 0, baseLength = 0;                            // Variables which represent the Drivebase Length/Width
         double vOffset = 0, hOffset = 0;                                 // Variables to represent the deadwheel offsets
         double vPrev = 0, vLPrev = 0, vRPrev = 0, hPrev = 0, tPrev = 0;  // Variables to represent the previous encoder positions
         double vdot = 0, hdot = 0, tdot = 0;                             // Variables for the rotational velocity deltas, (deg/hz, deg/hz, Rad/hz) [ROBOT FRAME]
 
     public:
         bool isCalibrated = false;                                       // Verifies bot initalization - is false if calibration doesn't occur.
+        double vWheel_Diameter = 0, hWheel_Diameter = 0;                 // Variables which specify the vert/horizontal wheel diameters
+        double baseWidth = 0, baseLength = 0;                            // Variables which represent the Drivebase Length/Width
         double update_hz = 50;                                           // The update rate of the robot
         double xG, yG, tG; // (In, In, Rad) [INERTIAL FRAME]             // The Global X, Y, and Theta location.
         
