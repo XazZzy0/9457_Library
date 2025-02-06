@@ -104,7 +104,6 @@ class PID {
         void adjPID(double kP, double kI, double kD);  // adjust the objects PID gain terms
         void adjWindup( double wTerm = 100.0 );        // adjust the windup term (default to 100)
         void setVel( double toPower );                 // set the maximum velocity of the response
-        void setMinVel( double toMinPower );           // set the minimum velocity of the response
 };
 
 /** ==============================================================================================================================================================================
