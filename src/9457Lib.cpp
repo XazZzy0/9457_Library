@@ -26,19 +26,22 @@ by the REC Foundation student-centered rules:
 -----------------------------------------------------------------------------------------------------------------------------
 
 I do not approve of the stance that competition robotics has taken with open-source libraries and I believe 
-it goes against the student-centered policies (especially since many were written by "adults" - per VEX 
-rulebook definition) such as Lemlib, jar template, etc... The rules are unenforced and abused and it has devalued 
-the effort that many other very talented teams have put into their programming - and students are unable to re-write and 
-explain these concepts. (See below for REC ruling)
-"Students use a custom library developed by another team, but cannot create their own custom libraries."
+it goes against the student-centered policies (especially since many students cannot write these functions themselves, explain the concepts,
+or even properly explain why they use it)
+(See below for general REC ruling) 
+~ "Students use a custom library developed by another team, but cannot create their own custom libraries." ~
 
-This library was written to properly document it, explain the concepts, and verify it works so I may guide my students 
+In general, the rules are unenforced and therefore abused which devalues the time, effort, and experience that many other very talented programmers have put into 
+their own robot and programming techniques.
+
+For clarity, libraries are not bad, in fact quite the opposite. But in a learning environment - it's usage without citation and proper understanding is plagarism.
+Therefore, this library was written to properly document, provide resources, explain the concepts, and verify it works so I may guide my students 
 through something that is known to be difficult. Hence, this is given as a line by line general use-case and is fully 
 commented so any student may reverse engineer and better understand the process workflow and math for these concepts. 
 
 Nobody is an expert when they first start - so sometimes it is best to work from an example and deconstruct the solution.
 
-~ Signed by: Jacob Wood [2025-02-06 : 13:26], Change Rev: Updates to header/main documentation
+~ Signed by: Jacob Wood [2025-02-07 : 15:27], Change Rev: more updates header/main documentation
 
 */
 
