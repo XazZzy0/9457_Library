@@ -266,7 +266,7 @@ void chassis::driveFwd( double dist, double maxVel, double minVel, int breakoutC
   // Initialize local PID, absolute minimum velocity, and How many times it should update in a second (std = 50 hz, don't go above 100 hz)
   PID anglePID(drivePID[0], drivePID[1], drivePID[2]); // create PID instance
   int update_hz = updateRate;
-  double tolBound = 10, tolBound_in = .1; 
+  double tolBound = 10, tolBound_in = .25; 
   int breakout = 0;
   
   double startDist = (left->position(deg) + right->position(deg))/2;     // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running 
@@ -278,11 +278,11 @@ void chassis::driveFwd( double dist, double maxVel, double minVel, int breakoutC
 
   anglePID.setVel(minVel, maxVel);         // Set the Minimum and Maximum Velocity of the response
 
- //if (ODOM) { startDist = ODOM->vWheel->position() }
+ if (ODOM) { startDist = ODOM->vWheel->position(deg);}
 
   while(breakout < breakoutCount) {
     if (ODOM){  // dist will use inches
-      /*currDist = (ODOM->vWheel->position() - startDist) / (PI*ODOM->vWheel_Diameter) ;
+      currDist = (ODOM->vWheel->position(deg) - startDist)/360 * (PI*ODOM->vWheel_Diameter) ;
       
       error = dist - currDist;
       pctError = error / totalError * 100;
@@ -290,7 +290,7 @@ void chassis::driveFwd( double dist, double maxVel, double minVel, int breakoutC
       toPower = anglePID.calculate( pctError );
       
       // debugging purposes - uncomment below if needed
-      printf("currROT: %.2f, targetROT(lower): %.2f, (upper): %.2f, --%i \n" , (left->position(deg) + right->position(deg))/2, startDist+dist-tolBound, startDist+dist+tolBound, breakout);
+      //printf("currROT: %.2f, targetROT(lower): %.2f, (upper): %.2f, --%i \n" , (left->position(deg) + right->position(deg))/2, startDist+dist-tolBound, startDist+dist+tolBound, breakout);
       //printf("Point turn --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
 
       left->spin( fwd, toPower, velocityUnits::pct );
@@ -299,7 +299,7 @@ void chassis::driveFwd( double dist, double maxVel, double minVel, int breakoutC
       task::sleep( 1000 / update_hz );
 
       if (currDist >=   dist - tolBound_in && currDist <=  dist + tolBound_in) { ++breakout; }
-      else { breakout = 0; }*/
+      else { breakout = 0; }
     }
     else{       // dist will use degrees
       currDist = (left->position(deg) + right->position(deg))/2;
@@ -310,7 +310,7 @@ void chassis::driveFwd( double dist, double maxVel, double minVel, int breakoutC
       toPower = anglePID.calculate( pctError );
       
       // debugging purposes - uncomment below if needed
-      printf("currROT: %.2f, targetROT(lower): %.2f, (upper): %.2f, --%i \n" , (left->position(deg) + right->position(deg))/2, startDist+dist-tolBound, startDist+dist+tolBound, breakout);
+      //printf("currROT: %.2f, targetROT(lower): %.2f, (upper): %.2f, --%i \n" , (left->position(deg) + right->position(deg))/2, startDist+dist-tolBound, startDist+dist+tolBound, breakout);
       //printf("Point turn --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
 
       left->spin( fwd, toPower, velocityUnits::pct );
@@ -432,7 +432,7 @@ void chassis::swingTurn( double rVel, double lVel, int runTime_ms){ // Example o
     right->spin( fwd, rVel, velocityUnits::pct );
     left->spin( fwd, lVel, velocityUnits::pct );
     task::sleep( 1000/ updateRate );
-    elapsedTime =+ 1000/updateRate;
+    elapsedTime += 1000/updateRate;
   }
   while (elapsedTime < runTime_ms);
 
@@ -517,7 +517,7 @@ void controlMotor::pidRotate( double target, double maxVel, double minVel, int b
       toPower = anglePID.calculate(pctError);   // calculate PID response
 
       // uncomment statement below to debug
-      printf("M w/o E --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
+      //printf("M w/o E --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
       
       refMotor->spin(fwd, toPower, velocityUnits::pct);   // spin the motor (using voltage)
 
@@ -761,7 +761,7 @@ void odomTrackCall(botOdom *botObject, rotation *verticalDW, rotation *horizonta
   while(true){
     // Insert for your robot accordingly for the thread
     // --- Updating the Position and heading of the robot (use custom "update" for your system)
-    botObject->trackLocation(verticalDW->position( degrees ), horizontalDW->position( degrees ), 0 );
+    botObject->trackLocation(verticalDW->position( degrees ), horizontalDW->position( degrees ), imuObject->rotation( degrees ) );
 
     // --- Print the position and heading of the robot for debugging purposes
     printf("Global Coordinates: [%.2f, %.2f, %.2f] \n", botObject->xG, botObject->yG, (botObject->tG)*RAD2DEG);
