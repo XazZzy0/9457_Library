@@ -37,7 +37,7 @@ their own robot and programming techniques.
 For clarity, libraries are not bad, in fact quite the opposite. But in a learning environment - it's usage without citation and proper understanding is plagarism.
 Therefore, this library was written to properly document, provide resources, explain the concepts, and verify it works so I may guide my students 
 through something that is known to be difficult. Hence, this is given as a line by line general use-case and is fully 
-commented so any student may reverse engineer and better understand the process workflow and math for these concepts. 
+commented so ANY student may reverse engineer and better understand the process workflow and math for these concepts. 
 
 Nobody is an expert when they first start - so sometimes it is best to work from an example and deconstruct the solution.
 
@@ -45,9 +45,7 @@ Nobody is an expert when they first start - so sometimes it is best to work from
 
 */
 
-#include "vex.h"
 #include "9457Lib.h"
-
 
 /*
 ██████╗ ██╗██████╗      ██████╗ ██████╗ ███╗   ██╗████████╗██████╗  ██████╗ ██╗     ██╗     ███████╗██████╗
@@ -137,8 +135,8 @@ botOdom::botOdom( void ) :
 
 // CASE 2 - 2 DW (perpedicular to eachother), 1 IMU
 botOdom::botOdom( rotation *vertWheel, double offset_V, rotation *horWheel, double offset_H ) :  
+  vOffset(offset_V), hOffset(offset_H),  
   vWheel(vertWheel), hWheel(horWheel),
-  vOffset(offset_V), hOffset(offset_H),
   xG(0), yG(0), tG(0)
   {} 
 
@@ -771,5 +769,87 @@ void odomTrackCall(botOdom *botObject, rotation *verticalDW, rotation *horizonta
 
     // --- Sleep the task for accurate update tracking.
     task::sleep(1000/botObject->update_hz);
+  }
+}
+
+vector<vector<double>> linInject (vector<double> startCoords, vector<double> endCoords, double division ) {
+  double m = (endCoords[1] - startCoords[1])/(endCoords[0] - startCoords[0]);
+  double b = startCoords[1] - m*startCoords[0];
+  double dx = (endCoords[0] - startCoords[0])/division;
+  
+  vector<vector<double>> pathCoords;
+  double tempX = startCoords[0];
+  double tempY = startCoords[1];
+  vector<double> tempPosition = {tempX, tempY};
+  
+  for (int iX = 1; iX <= division; iX++) {
+    tempX += dx;
+    tempY = m*tempX - b;
+    //printf("lin, Step %i --- X: %f, Y: %f \n", iX, tempX, tempY);
+    tempPosition = {tempX, tempY};
+    pathCoords.push_back(tempPosition);
+  }
+
+  return pathCoords;
+}
+
+vector<vector<double>> bezInject (vector<double> startCoords, vector<double> controlCoords1, vector<double> controlCoords2, vector<double> endCoords, double division) {
+  vector<vector<double>> pathCoords;
+  double tempX = startCoords[0];
+  double tempY = startCoords[1];
+  vector<double> tempPosition = {tempX, tempY};
+  double t = 1/division;
+  
+  for(int iX = 1; iX <= division; iX++) {
+    tempX = pow(1-t,3)*startCoords[0] + 3*pow(1-t, 2)*t*controlCoords1[0] + 3*(1-t)*pow(t,2)*controlCoords2[0] + pow(t, 3)*endCoords[0];
+    tempY = pow(1-t,3)*startCoords[1] + 3*pow(1-t, 2)*t*controlCoords1[1] + 3*(1-t)*pow(t,2)*controlCoords2[1] + pow(t, 3)*endCoords[1];
+    
+    //printf("bez4, Step %i, t:%.2f  --- X: %f, Y: %f \n", iX, t, tempX, tempY);
+    
+    t += 1/division;
+    tempPosition = {tempX, tempY};
+    pathCoords.push_back(tempPosition);
+  }
+  
+  return pathCoords;
+}
+
+double findVecDist(vector<double> p1, vector<double> p2) {
+  return sqrt(pow(p2[0] - p1[0], 2) + pow(p2[1] - p1[1], 2));
+}
+
+double findVecDet(vector<double> p1, vector<double> p2) {
+  return sqrt(p1[0]*p2[1] - p2[0]*p1[1]);
+}
+
+int sgn( double val ) {
+  if (val >= 0) { return  1; }
+  else          { return -1; }
+}
+  
+void pursuePath (vector<double> currPos, vector<vector<double>> path, double velocity, double lookAhead) {
+  for (int iX = 0; iX < path.size(); iX++) {
+    bool intersectFound = false;
+    double x1_offset = path[iX][1] - currPos[1];
+    double y1_offset = path[iX][2] - currPos[2];
+    double x2_offset = path[iX+1][1] - currPos[1];
+    double y2_offset = path[iX+1][2] - currPos[2];
+    
+    double dx = x2_offset - x1_offset;      
+    double dy = y2_offset - y1_offset;
+    double dr = sqrt(pow(dx, 2) + pow(dy, 2));
+    double D = x1_offset*y2_offset - x2_offset*y1_offset;
+    double discriminant = pow(lookAhead, 2) * pow(dr, 2) - pow(D, 2);
+    
+    if (discriminant >= 0){
+      intersectFound = true;
+        
+      double x1Sol = (D * dy + sgn(dy) * dx * sqrt(discriminant)) / pow(dr, 2);
+      double x2Sol = (D * dy - sgn(dy) * dx * sqrt(discriminant)) / pow(dr, 2);
+      double y1Sol = (- D * dx + fabs(dy) * sqrt(discriminant)) / pow(dr, 2);
+      double y2Sol = (- D * dx - fabs(dy) * sqrt(discriminant)) / pow(dr, 2);  
+        
+      printf("Disc: %f \t pt1: [%f, %f] \t pt2: [%f, %f] \n", discriminant, x1Sol, y1Sol, x2Sol, y2Sol);
+    }
   }
 }

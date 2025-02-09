@@ -3,7 +3,7 @@
 using namespace vex;
 
 // === Object specification ===
-competition Competition;
+competition Competition; 
 controller Controller(primary);
 brain Brain;
 
@@ -24,13 +24,15 @@ rotation hDead = rotation(PORT5, false);
 inertial IMU = inertial(PORT3);
 
 // === Global Library specification ===
-botOdom yourRobot(&vDead, 0, &hDead, 0);
-controlMotor yourMotor(&testmotor);
-controlMotor yourMotorGroup(&motors);
-chassis yourDB(&leftMotors, &rightMotors, &IMU);
+// This is how you declare these library classes, the "&" keys are references to your objects.
+botOdom yourRobot(&vDead, 0, &hDead, 0);            // Creating a odom class
+controlMotor yourMotor(&testmotor);                 // Creating a controlMotor class
+controlMotor yourMotorGroup(&motors);               // Creating a controlMotor group class
+chassis yourDB(&leftMotors, &rightMotors, &IMU);    // Creating a chassis class
 
 // === Global storage variables ===
-double tempVar = 0;
+TEAMCOLOR setColor = emptyColor;                    // Set your Color (RED, BLUE)
+AUTONSET setAuton = emptyAuton;                     // Set your Auton (LEFT, RIGHT, SKILLS)
 
 /*
 ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
@@ -41,6 +43,7 @@ double tempVar = 0;
 ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 */
 
+// This is a smaller custom function for an update callback
 void odomUpdate ( void ){
   odomTrackCall(&yourRobot, &vDead, &hDead, &IMU);
 }
@@ -57,12 +60,11 @@ void odomUpdate ( void ){
 
 // Pre-autonomous intial setups
 void pre_auton ( void ){
-  yourRobot.setVerticalDiameter(3.25);
-  yourRobot.setHorizontalDiameter(3.25);
-  yourRobot.setBotSize(16, 18);
+  yourRobot.setVerticalDiameter(3.25);    // Set your vertical Diameter of the deadwheel
+  yourRobot.setHorizontalDiameter(3.25);  // Set your vertical Diameter of the deadwheel
+  yourRobot.setBotSize(16, 18);           // Set your robot size
   
-  yourRobot.initializeSystem();
-  lbRot.resetPosition();
+  yourRobot.initializeSystem();           // initalize your system
 }
 
 void userControl( void ) {
@@ -72,15 +74,30 @@ void userControl( void ) {
 }
 
 void autoControl( void ) {
-  //initalize
-  yourRobot.setPose(0, 0, 0);
-  yourDB.initialize();
+    switch ( setAuton )
+    {
+    case RIGHT:
+      if( setColor == RED ){
+        /* RED LEFT code */
+      }
+      else if ( setColor == BLUE ) {
+        /* BLUE LEFT code */
+      }  
+      break;
+    
+    case LEFT:
+      if( setColor == RED ){
+        /* RED LEFT code */
+      }
+      else if ( setColor == BLUE ) {
+        /* BLUE LEFT code */
+      }  
+      break;
 
-  //move
-  yourDB.setDrivePID(2.55, 0, .225);
-  yourDB.driveAccel(9500, 100, 15.0, 3.0);
-  yourDB.pointTurn(175, 50);
-  yourDB.driveAccel(9500, 100, 15.0, 3.0);  
+    case SKILLS:
+      /* SKILLS code */
+      break;
+    }
 }
 
 int main() {
@@ -89,7 +106,7 @@ int main() {
   Competition.drivercontrol( userControl );
   Competition.autonomous( autoControl );
   
-  thread Odometry = thread( odomUpdate ); 
+  thread Odometry = thread( odomUpdate );     // creating a thread for multi-threading.
 
   while(true) {
     task::sleep(100); // prevent main from exiting with an infinite loop -> For task scheduling
