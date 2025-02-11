@@ -247,6 +247,11 @@ Currently in work. Relative coordinate system.
 working to implement motor plug-ins and more advanced manuevers.
 Needs Odom to work as of the moment
 */
+
+chassis::chassis( vex::motor_group *leftGroup, vex::motor_group *rightGroup ):
+    left(leftGroup), right(rightGroup), IMU(nullptr)
+    {}
+
 chassis::chassis( vex::motor_group *leftGroup, vex::motor_group *rightGroup, vex::inertial *botIMU ) : 
     left(leftGroup), right(rightGroup), IMU(botIMU)
     {}
@@ -467,6 +472,50 @@ void chassis::swingTurn( double rVel, double lVel, int runTime_ms){ // Example o
  return;
 }
 
+
+void arcadeDrive( controller *Controller, double deadband ) {
+  float throttle, turn, outputL, outputR;
+  if ( fabs(Controller->Axis3->value()) >= deadband ) { throttle = Controller->Axis3->value()/100; }
+  if ( fabs(Controller->Axis1->value()) >= deadband ) { turn = Controller->Axis1->value()/100; }
+
+  outputL = throttle + turn;
+  outputR = throttle - turn;
+
+  if (outputL > 1)       {outputL = 1.0};
+  else if (outputL < -1) {outputL = -1.0};
+  if (outputR > 1)       {outputR = 1.0};
+  else if (outputR < -1) {outputR = -1.0};
+ 
+  left.spin(fwd, lerp(0, 12, outputL), volt);
+  right.spin(fwd, lerp(0, 12, outputR), volt);
+}
+
+void arcadeDrive( controller *Controller, double spline double deadband ){ // accel curve code (spline < .50 = decel response, .50 = linear response, > .50 = accel response)
+  float startY = 0, endY = 1; 
+  float throttle, turn, outputL, outputR;
+  if ( fabs(Controller->Axis3->value()) >= deadband ) { throttle = Controller->Axis3->value()/100; }
+  if ( fabs(Controller->Axis1->value()) >= deadband ) { turn = Controller->Axis1->value()/100; }
+  float newTurn = pow(1-turn,2)*startY + (1-turn)*turn*spline + pow(turn, 2)*endY;
+ 
+  outputL = throttle + newTurn;
+  outputR = throttle - newTurn;
+
+  if (outputL > 1)       {outputL = 1.0};
+  else if (outputL < -1) {outputL = -1.0};
+  if (outputR > 1)       {outputR = 1.0};
+  else if (outputR < -1) {outputR = -1.0};
+ 
+  left.spin(fwd, lerp(0, 12, outputL), volt);
+  right.spin(fwd, lerp(0, 12, outputR), volt);
+}
+
+void tankDrive( controller *Controller, double deadband) {
+  float throttleL, throttleR;
+  if ( fabs(Controller->Axis3->value()) >= deadband ) { throttleL = Controller->Axis3->value()/100; }
+  if ( fabs(Controller->Axis2->value()) >= deadband ) { throttleR = Controller->Axis2->value()/100; }
+  left.spin(fwd, lerp(0, 12, throttleL), volt);
+  right.spin(fwd, lerp(0, 12, throttleR), volt);
+}
 
 /*
 ███████╗███╗   ███╗ █████╗ ██████╗ ████████╗    ███╗   ███╗ ██████╗ ████████╗ ██████╗ ██████╗
