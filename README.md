@@ -29,19 +29,20 @@ by the REC Foundation student-centered rules:
 
 
 As a older member of the VEX community, I do not approve of the stance that competition robotics has taken with the "plug and play" 
-open-source libraries and I believe it goes against the student-centered policies (especially since many students cannot write these 
-functions themselves, demonstrate the concepts, or even provide a proper reason as to why they would use someone elses library).
+open-source libraries teams provide and I believe it goes against the student-centered policies (especially since many students 
+cannot write these functions themselves, demonstrate the concepts, or even provide a proper reason as to why they would use someone 
+elses library).
 (See below for general REC ruling) 
 - "Students use a custom library developed by another team, but cannot create their own custom libraries." 
 
-For clarity, libraries are not bad, in fact quite the opposite. But in a learning environment - it's usage without citation and proper understanding is blatent plagarism. 
-Especially in a competition environment such as vex, these libraries devalue the time, effort, and experience that many other very talented students have put into their 
-own closed-source libraries which made them stand out.
+For clarity, libraries are not bad, in fact I believe quite the opposite - but the purpose of VEX is to inspire, grow, and learn. With these libraries, the inspiration and potential for growth
+is removed. Their usage without citation and proper understanding is blatent plagarism, especially in a competition environment where trophies may be awarded on percieved "skill". 
+As a result, these libraries devalue the time, effort, and experience that many other very talented students have put into their own closed-source libraries which made them stand out.
 
-While yes, this is technically a library itself, this is written as more of a wiki (similar to the VexU Sigbots) to properly document, provide resources, 
-explain the concepts, and verify it works so I may better guide my students through something that is known to be difficult. Hence, this is given as a line 
-by line general use-case and is fully commented so ANY student may reverse engineer and better understand the process workflow and math for these technical concepts. 
+Continuing, while yes, this is technically a library itself, this is (and always will be) written as more of a wiki (similar to the VexU Sigbots) to properly document, provide resources, 
+explain the concepts, and verify it works so I may better mentor my students through something that is known to be difficult. Hence, this is given as a line by line general use-case 
+and is fully commented so ANY student may reverse engineer and better understand the process workflow + math for these technical concepts. 
 
 Trial by fire sucks, and nobody is an expert when they first start - so, sometimes it is best to work from an example and deconstruct the solution.
 
-~ Signed by: Jacob Wood [2025-02-11 : 14:29], Change Rev: README update
+~ Signed by: Jacob Wood [2025-02-11 : 14:29], Change Rev: Update README.md 
