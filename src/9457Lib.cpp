@@ -476,7 +476,9 @@ void chassis::swingTurn( double rVel, double lVel, int runTime_ms){ // Example o
 void arcadeDrive( controller *Controller, float deadband ) {
   float throttle, turn, outputL, outputR;
   if ( fabs(Controller->Axis3->value()) >= deadband ) { throttle = Controller->Axis3->value()/100; }
+  else { throttle = 0; }
   if ( fabs(Controller->Axis1->value()) >= deadband ) { turn = Controller->Axis1->value()/100; }
+  else { turn = 0; }
 
   outputL = throttle + turn;
   outputR = throttle - turn;
@@ -494,7 +496,10 @@ void arcadeDrive( controller *Controller, float spline float deadband ){ // acce
   float startY = 0, endY = 1; 
   float throttle, turn, outputL, outputR;
   if ( fabs(Controller->Axis3->value()) >= deadband ) { throttle = Controller->Axis3->value()/100; }
+  else { throttle = 0; }
   if ( fabs(Controller->Axis1->value()) >= deadband ) { turn = Controller->Axis1->value()/100; }
+  else { turn = 0; }
+   
   float newTurn = pow(1-turn,2)*startY + (1-turn)*turn*spline + pow(turn, 2)*endY;
  
   outputL = throttle + newTurn;
@@ -512,7 +517,9 @@ void arcadeDrive( controller *Controller, float spline float deadband ){ // acce
 void tankDrive( controller *Controller, float deadband) {
   float throttleL, throttleR;
   if ( fabs(Controller->Axis3->value()) >= deadband ) { throttleL = Controller->Axis3->value()/100; }
+  else { throttleL = 0; }
   if ( fabs(Controller->Axis2->value()) >= deadband ) { throttleR = Controller->Axis2->value()/100; }
+  else { throttleR = 0; }
   left.spin(fwd, lerp(0, 12, throttleL), volt);
   right.spin(fwd, lerp(0, 12, throttleR), volt);
 }
