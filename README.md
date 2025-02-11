@@ -29,7 +29,7 @@ by the REC Foundation student-centered rules:
 
 
 As a older member of the VEX community, I do not approve of the stance that competition robotics has taken with the "plug and play" 
-open-source libraries teams provide and I believe it goes against the student-centered policies (especially since many students 
+open-source libraries teams provide and I believe it goes against the student-centered policies (especially since many other students 
 cannot write these functions themselves, demonstrate the concepts, or even provide a proper reason as to why they would use someone 
 elses library).
 (See below for general REC ruling) 
@@ -45,4 +45,4 @@ and is fully commented so ANY student may reverse engineer and better understand
 
 Trial by fire sucks, and nobody is an expert when they first start - so, sometimes it is best to work from an example and deconstruct the solution.
 
-~ Signed by: Jacob Wood [2025-02-11 : 14:56], Change Rev: Update README.md 
+~ Signed by: Jacob Wood [2025-02-11 : 14:57], Change Rev: Update README.md 
