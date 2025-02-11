@@ -115,6 +115,7 @@ class PID {
     // Public means that you can call/access everything in main.
     public:
         double Pterm = 0.0, Iterm = 0.0, Dterm = 0.0; // Initalizing external access variables
+        double initI = 50.0;                          // The starting I sum term - lower it for the I to have less effect on the system
         
         PID(double kp, double ki, double kd);         // A constructor - this is how you specify creating the object
 
