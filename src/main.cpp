@@ -74,30 +74,32 @@ void userControl( void ) {
 }
 
 void autoControl( void ) {
-    switch ( setAuton )
-    {
-    case RIGHT:
-      if( setColor == RED ){
-        /* RED LEFT code */
-      }
-      else if ( setColor == BLUE ) {
-        /* BLUE LEFT code */
-      }  
-      break;
-    
-    case LEFT:
-      if( setColor == RED ){
-        /* RED LEFT code */
-      }
-      else if ( setColor == BLUE ) {
-        /* BLUE LEFT code */
-      }  
-      break;
-
-    case SKILLS:
-      /* SKILLS code */
-      break;
+  switch ( setAuton )
+  {
+  case RIGHT:
+    if( setColor == RED ){
+      /* RED LEFT code */
     }
+    else if ( setColor == BLUE ) {
+      /* BLUE LEFT code */
+    }  
+    else { return; }
+    break;
+  
+  case LEFT:
+    if( setColor == RED ){
+      /* RED LEFT code */
+    }
+    else if ( setColor == BLUE ) {
+      /* BLUE LEFT code */
+    }  
+    else { return; }
+    break;
+
+  case SKILLS:
+    /* SKILLS code */
+    break;
+  }
 }
 
 int main() {

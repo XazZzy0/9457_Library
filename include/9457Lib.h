@@ -48,6 +48,8 @@ Nobody is an expert when they first start - so sometimes it is best to work from
 #ifndef EASTLIBRARY     // Header guard
 #include "vex.h"        // The vex functions - to call the standard vex functions
 #include <vector>       // The vector std library, makes the path persuit much easier.
+#include <iostream>     // a default c++ library for printing.
+#include <cmath>        // a default library for math functions
 using namespace vex;    // using namespace vex helps to type less
 using namespace std;    // using namespace std helps to type less
 
