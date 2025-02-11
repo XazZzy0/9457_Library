@@ -191,6 +191,7 @@ class chassis {
         int updateRate = 50.0;                    // the update rate of the system.
 
     public:
+        chassis( motor_group *leftGroup, motor_group *rightGroup ); // Constructor for the Chassis object - No IMU
         chassis( motor_group *leftGroup, motor_group *rightGroup, inertial *botIMU ); // Constructor for the Chassis object
 
         void setBrake( int type = 1 ); // Set the brake type of your robot. [0 = coast, 1 = brake, 2 = hold];
@@ -203,6 +204,10 @@ class chassis {
         void driveAccel( double dist, double vel, double accelPeriod = 15, double minVel = 3, int breakoutCount = 8, bool waitForCompletion = true); // The PID accelerate command 
         void pointTurn( double degrees, double vel, double minVel = 3, int breakoutCount = 12, bool waitForCompletion = true); // The PID point turn command 
         void swingTurn( double rVel, double lVel, int runTime_ms );
+
+        void arcadeDrive();                  // Default Arcade Control for driving
+        void arcadeDrive( double spline );   // Accel based Arcade Control for driving - customizable!
+        void tankDrive();                    // Default Tank Control for driving
 };
 
 /** ==============================================================================================================================================================================
