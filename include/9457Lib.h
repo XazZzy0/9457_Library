@@ -192,7 +192,8 @@ class chassis {
 
     public:
         chassis( motor_group *leftGroup, motor_group *rightGroup, inertial *botIMU ); // Constructor for the Chassis object
-        
+
+        void setBrake( int type = 1 ); // Set the brake type of your robot. [0 = coast, 1 = brake, 2 = hold];
         void setODOM(botOdom *botODOM);  // pointer to the odometry objet, can be used for pure pursuit.                                           
         void initialize( void );  // Function to be used to initalize the chassis
         void setDrivePID(double pTerm  = 0.85, double iTerm = 0, double dTerm = 0.225); //Default PID gain response to driving
@@ -227,7 +228,8 @@ class controlMotor {
         controlMotor( motor *ptrMotor, rotation *ptrRot );         // Constructor for a single motor attached to a rotation sensor
         controlMotor( motor_group *ptrGroup );                     // Constructor for a single motor group
         controlMotor( motor_group *ptrGroup, rotation *ptrRot );   // Constructor for a single motor group attached to a rotation sensor
-        
+
+        void setBrake( int type = 1 ); // Set the brake type of your motor(s). [0 = coast, 1 = brake, 2 = hold]; - this is reduntant code for ease (compared to vex commands)
         void setPID( double pTerm = 1.1, double iTerm = 0, double dTerm = 0.225 ); // Set the default PID variables
         void setRate( double rate_hz ); // Set the update rate of the system
         
