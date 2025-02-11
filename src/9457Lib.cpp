@@ -251,6 +251,23 @@ chassis::chassis( vex::motor_group *leftGroup, vex::motor_group *rightGroup, vex
     left(leftGroup), right(rightGroup), IMU(botIMU)
     {}
 
+// Setting the brake type of the chassis
+void chassis::setBrake( int type ) {
+  switch (type) {
+    case 0:
+      left->setStopping(coast);
+      right->setStopping(coast);
+      break;
+    case 1: 
+      left->setStopping(brake);
+      right->setStopping(brake);
+      break;
+   case 2: 
+      left->setStopping(hold);
+      right->setStopping(hold);
+      break;
+  } 
+}
 
 void chassis::setODOM(botOdom *botODOM) { ODOM = botODOM; }
 
@@ -477,6 +494,36 @@ controlMotor::controlMotor( vex::motor_group *ptrGroup, vex::rotation *ptrRot) :
 controlMotor::controlMotor( vex::motor_group *ptrGroup ) :
   refMotor(nullptr), refGroup(ptrGroup), refEncoder(nullptr)
   {}
+
+// Setting the brake type of the chassis
+void controlMotor::setBrake( int type ) {
+ if (refGroup){
+    switch (type) {
+      case 0:
+        refGroup->setStopping(coast);
+        break;
+      case 1: 
+        refGroup->setStopping(brake);
+        break;
+     case 2: 
+        refGroup->setStopping(hold);
+        break;
+     } 
+ }
+ else if (refMotor){
+    switch (type) {
+      case 0:
+        refMotor->setStopping(coast);
+        break;
+      case 1: 
+        refMotor->setStopping(brake);
+        break;
+     case 2: 
+        refMotor->setStopping(hold);
+        break;
+     } 
+ }
+}
 
 void controlMotor::setPID( double pTerm, double iTerm, double dTerm ) {
   PID_Coef[0] = pTerm;
