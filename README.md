@@ -2,7 +2,7 @@
 
 --- EVERYONE: ---
 
-This code is for reference only, since it has been written by ME an "Adult", 
+This code is for reference only, since it has been written by "Adults", 
 direct use of the code provided during a competition is not allowed!!!
 
 If used/distributed by the students (such as copy and pasting), the decision is not supported by the 
