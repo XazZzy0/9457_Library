@@ -205,9 +205,9 @@ class chassis {
         void pointTurn( double degrees, double vel, double minVel = 3, int breakoutCount = 12, bool waitForCompletion = true); // The PID point turn command 
         void swingTurn( double rVel, double lVel, int runTime_ms );
 
-        void arcadeDrive();                  // Default Arcade Control for driving
-        void arcadeDrive( double spline );   // Accel based Arcade Control for driving - customizable!
-        void tankDrive();                    // Default Tank Control for driving
+        void arcadeDrive( controller *Controller, float deadband = 5.0 );                  // Default Arcade Control for driving
+        void arcadeDrive( controller *Controller, float spline, float deadband = 5.0 );    // Accel based Arcade Control for driving - customizable!
+        void tankDrive( controller *Controller, float deadband = 5.0 );                    // Default Tank Control for driving
 };
 
 /** ==============================================================================================================================================================================
