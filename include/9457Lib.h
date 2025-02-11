@@ -188,6 +188,8 @@ class chassis {
         botOdom *ODOM;                            // an inertial class
         double drivePID[3] = {0.675, 0, 0.225};   // the PID Coeff storage for driving manuevers.
         double turnPID[3] = {0.55, 0.0, 0.225};   // the PID Coeff storage for turning manuevers.
+        double headingPID[3] = {0.0, 0.0, 0.0};   // The PID Coeff storage for heading manuevers.
+        double swingPID[3] = {0.0, 0.0, 0.0};     // The PID Coeff storage for arc/swing manuevers.
         int updateRate = 50.0;                    // the update rate of the system.
 
     public:
@@ -197,8 +199,10 @@ class chassis {
         void setBrake( int type = 1 ); // Set the brake type of your robot. [0 = coast, 1 = brake, 2 = hold];
         void setODOM(botOdom *botODOM);  // pointer to the odometry objet, can be used for pure pursuit.                                           
         void initialize( void );  // Function to be used to initalize the chassis
-        void setDrivePID(double pTerm  = 0.85, double iTerm = 0, double dTerm = 0.225); //Default PID gain response to driving
-        void setTurnPID(double pTerm  = 0.6, double iTerm = 0, double dTerm = 0.225); //Default PID gain response to turning
+        void setDrivePID(double pTerm, double iTerm, double dTerm); // PID gain response to driving
+        void setTurnPID(double pTerm, double iTerm, double dTerm); // PID gain response to turning
+        void setHeadingPID(double pTerm, double iTerm, double dTerm); // PID gain response to heading changes
+        void setSwingPID(double pTerm, double iTerm, double dTerm); // PID gain response to swing/arc turns           
 
         void driveFwd( double dist, double vel, double minVel = 3, int brakoutCount = 8, bool waitForCompletion = true ); // The PID drive forward command 
         void driveAccel( double dist, double vel, double accelPeriod = 15, double minVel = 3, int breakoutCount = 8, bool waitForCompletion = true); // The PID accelerate command 
