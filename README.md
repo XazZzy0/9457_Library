@@ -2,7 +2,7 @@
 
 --- EVERYONE: ---
 
-This code is for reference only, since it has been written by "Adults", 
+This codebase is for reference only, since it has been written by "Adults", 
 direct use of the code provided during a competition is not allowed!!!
 
 If used/distributed by the students (such as copy and pasting), the decision is not supported by the 
@@ -45,4 +45,4 @@ and is fully commented so ANY student may reverse engineer and better understand
 
 Trial by fire sucks, and nobody is an expert when they first start - so, sometimes it is best to work from an example and deconstruct the solution.
 
-~ Signed by: Jacob Wood [2025-02-11 : 14:29], Change Rev: Update README.md 
+~ Signed by: Jacob Wood [2025-02-11 : 14:56], Change Rev: Update README.md 
