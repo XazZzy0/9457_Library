@@ -15,8 +15,9 @@ high level engineering concepts during practice such as:
  - Feedback control systems
  - Sensor filtering
  - Odometry
- - Pure pursuit 
-and provide examples for how robotics teams can use such concepts to succeed and solve problems in and 
+ - Pure pursuit
+
+In addition to providing examples for how robotics teams can use such concepts to succeed and solve problems in and 
 out of competition. All code must and will be written by the students. It is our full intention to abide
 by the REC Foundation student-centered rules: 
 
