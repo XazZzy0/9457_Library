@@ -104,7 +104,7 @@ enum AUTONSET  {LEFT, RIGHT, SKILLS, emptyAuton};      // This is to hold the va
 // https://en.wikipedia.org/wiki/Proportional%E2%80%93integral%E2%80%93derivative_controller
 
 class PID {
-    // Private means that these variables/methods can only be accessed from calling the function itself
+    // Private means that these variables/methods can only be accessed from the methods within the class itself
     private:                                      
         double Kp = 0.0, Ki = 0, Kd = 0.0;        // The P.I.D. gain coefficients
         double integral = 0.0, prevError = 0.0;   // integral, previous error (for "I" and "D" coeff.)
