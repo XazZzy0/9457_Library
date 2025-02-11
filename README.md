@@ -3,7 +3,7 @@
 --- EVERYONE: ---
 
 This code is for reference only, since it has been written by ME an "Adult", 
-direct use of this code provided during a competition is not allowed!!!
+direct use of the code provided during a competition is not allowed!!!
 
 If used/distributed by the students (such as copy and pasting), the decision is not supported by the 
 coaches or our organization. The student takes full responsibility for any punishment that may occur 
@@ -27,9 +27,10 @@ by the REC Foundation student-centered rules:
  
 -----------------------------------------------------------------------------------------------------------------------------
 
-I do not approve of the stance that competition robotics has taken with the "plug and play" open-source libraries and I believe 
-it goes against the student-centered policies (especially since many students cannot write these functions themselves, demonstrate the concepts,
-or even provide a proper reason as to why they would use someone elses library)
+
+As a older member of the VEX community, I do not approve of the stance that competition robotics has taken with the "plug and play" 
+open-source libraries and I believe it goes against the student-centered policies (especially since many students cannot write these 
+functions themselves, demonstrate the concepts, or even provide a proper reason as to why they would use someone elses library).
 (See below for general REC ruling) 
 - "Students use a custom library developed by another team, but cannot create their own custom libraries." 
 
