@@ -1,4 +1,3 @@
-/* 
 --- EVERYONE: ---
 
 This code is for reference only, since it has been written by ME an "Adult", 
@@ -43,5 +42,3 @@ by line general use-case and is fully commented so ANY student may reverse engin
 Trial by fire sucks, and nobody is an expert when they first start - so, sometimes it is best to work from an example and deconstruct the solution.
 
 ~ Signed by: Jacob Wood [2025-02-11 : 13:57], Change Rev: README update
-
-*/
