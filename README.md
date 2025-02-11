@@ -3,7 +3,7 @@
 --- EVERYONE: ---
 
 This code is for reference only, since it has been written by ME an "Adult", 
-direct use of this library during a competition is not allowed!!!
+direct use of this code provided during a competition is not allowed!!!
 
 If used/distributed by the students (such as copy and pasting), the decision is not supported by the 
 coaches or our organization. The student takes full responsibility for any punishment that may occur 
