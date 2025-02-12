@@ -409,7 +409,7 @@ void chassis::pointTurn( double angle, double vel, double minVel, int breakoutCo
 }
 
 
-void chassis::swingTurn( turnType dir, double toTic, double vel ){ // Example of a differential swing turn, default units for is motor 
+void chassis::swingTurn( turnType dir, double toTic, double vel, bool waitForCompletion ){ // Example of a differential swing turn, default units for is motor 
   double ticSum;   // initialize counter
   vel = fabs(vel); // makes positive velocity standard
 
