@@ -41,7 +41,7 @@ enum AUTONSET  {LEFT, RIGHT, SKILLS, emptyAuton};      // This is to hold the va
 */
 
 // Classes can be better defined by https://www.geeksforgeeks.org/c-classes-and-objects/. 
-// They are the foundation of object oriented programming and are 'objects' which can hold both 
+// They are the foundation of object oriented programming (OOP) and are 'objects' which can hold both 
 // functions and variables. They help make everything more organized when you have a huge library such as this!
 
 /** ==============================================================================================================================================================================
