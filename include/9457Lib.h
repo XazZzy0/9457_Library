@@ -138,7 +138,7 @@ class botOdom {
  */
 class chassis { 
     private:
-        motor_group *left, *right;                // a motor_group containing the left and right side of the drivebase
+        motor_group *leftDB, *rightDB;                // a motor_group containing the left and right side of the drivebase
         inertial *IMU;                            // an inertial class containing the IMU info
         botOdom *ODOM;                            // an inertial class
         double drivePID[3] = {0.675, 0, 0.225};   // the PID Coeff storage for driving manuevers.
@@ -162,7 +162,7 @@ class chassis {
         void driveFwd( double dist, double vel, double minVel = 3, int brakoutCount = 8, bool waitForCompletion = true ); // The PID drive forward command 
         void driveAccel( double dist, double vel, double accelPeriod = 15, double minVel = 3, int breakoutCount = 8, bool waitForCompletion = true); // The PID accelerate command 
         void pointTurn( double degrees, double vel, double minVel = 3, int breakoutCount = 12, bool waitForCompletion = true); // The PID point turn command 
-        void swingTurn( double rVel, double lVel, int runTime_ms );
+        void swingTurn( turnType dir, double toTic, double vel, bool waitForCompletion = true );
 
         void arcadeDrive( controller *Controller, float deadband = 5.0 );                  // Default Arcade Control for driving
         void arcadeDrive( controller *Controller, float spline, float deadband = 5.0 );    // Accel based Arcade Control for driving - customizable!
