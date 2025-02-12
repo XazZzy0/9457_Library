@@ -16,18 +16,15 @@ motor RM = motor(PORT1, ratio6_1, true);
 motor RR = motor(PORT2, ratio6_1, false);
 motor_group leftMotors = motor_group( LF, LM, LR );
 motor_group rightMotors = motor_group( RF, RM, RR );
-motor_group motors = motor_group( LF, LM, LR, RF, RM, RR );
 
-rotation lbRot = rotation(PORT10, true);
 rotation vDead = rotation(PORT9, false);
 rotation hDead = rotation(PORT5, false);
 inertial IMU = inertial(PORT3);
 
 // === Global Library specification ===
 // This is how you declare these library classes, the "&" keys are references to your objects.
-botOdom yourRobot(&vDead, 0, &hDead, 0);            // Creating a odom class
+botOdom yourRobot(&vDead, 0, &hDead, 0);            // Creating a odom class with 2 Offset Deadwheels
 controlMotor yourMotor(&testmotor);                 // Creating a controlMotor class
-controlMotor yourMotorGroup(&motors);               // Creating a controlMotor group class
 chassis yourDB(&leftMotors, &rightMotors, &IMU);    // Creating a chassis class
 
 // === Global storage variables ===
