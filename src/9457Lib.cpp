@@ -202,27 +202,27 @@ Needs Odom to work as of the moment
 */
 
 chassis::chassis( vex::motor_group *leftGroup, vex::motor_group *rightGroup ):
-    left(leftGroup), right(rightGroup), IMU(nullptr)
+    leftDB(leftGroup), rightDB(rightGroup), IMU(nullptr)
     {}
 
 chassis::chassis( vex::motor_group *leftGroup, vex::motor_group *rightGroup, vex::inertial *botIMU ) : 
-    left(leftGroup), right(rightGroup), IMU(botIMU)
+    leftDB(leftGroup), rightDB(rightGroup), IMU(botIMU)
     {}
 
 // Setting the brake type of the chassis
 void chassis::setBrake( int type ) {
   switch (type) {
     case 0:
-      left->setStopping(coast);
-      right->setStopping(coast);
+      leftDB->setStopping(coast);
+      rightDB->setStopping(coast);
       break;
     case 1: 
-      left->setStopping(brake);
-      right->setStopping(brake);
+      leftDB->setStopping(brake);
+      rightDB->setStopping(brake);
       break;
    case 2: 
-      left->setStopping(hold);
-      right->setStopping(hold);
+      leftDB->setStopping(hold);
+      rightDB->setStopping(hold);
       break;
   } 
 }
@@ -230,8 +230,8 @@ void chassis::setBrake( int type ) {
 void chassis::setODOM(botOdom *botODOM) { ODOM = botODOM; }
 
 void chassis::initialize( void ){
-  left->resetPosition();
-  right->resetPosition();
+  leftDB->resetPosition();
+  rightDB->resetPosition();
 }
 
 void chassis::setDrivePID( double pTerm, double iTerm, double dTerm ){
@@ -253,7 +253,7 @@ void chassis::driveFwd( double dist, double maxVel, double minVel, int breakoutC
   double tolBound = 10, tolBound_in = .25; 
   int breakout = 0;
   
-  double startDist = (left->position(deg) + right->position(deg))/2;     // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running 
+  double startDist = (leftDB->position(deg) + rightDB->position(deg))/2;     // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running 
   double currDist = 0;                                                   // initialize Encoder holder variable                            
   double totalError = fabs( dist );                                      // initialize absolute total error of manuever
   double error = dist;                                                   // initialize error
@@ -274,11 +274,11 @@ void chassis::driveFwd( double dist, double maxVel, double minVel, int breakoutC
       toPower = anglePID.calculate( pctError );
       
       // debugging purposes - uncomment below if needed
-      //printf("currROT: %.2f, targetROT(lower): %.2f, (upper): %.2f, --%i \n" , (left->position(deg) + right->position(deg))/2, startDist+dist-tolBound, startDist+dist+tolBound, breakout);
+      //printf("currROT: %.2f, targetROT(lower): %.2f, (upper): %.2f, --%i \n" , (leftDB->position(deg) + rightDB->position(deg))/2, startDist+dist-tolBound, startDist+dist+tolBound, breakout);
       //printf("Point turn --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
 
-      left->spin( fwd, toPower, velocityUnits::pct );
-      right->spin( fwd, toPower, velocityUnits::pct );
+      leftDB->spin( fwd, toPower, velocityUnits::pct );
+      rightDB->spin( fwd, toPower, velocityUnits::pct );
 
       task::sleep( 1000 / update_hz );
 
@@ -286,7 +286,7 @@ void chassis::driveFwd( double dist, double maxVel, double minVel, int breakoutC
       else { breakout = 0; }
     }
     else{       // dist will use degrees
-      currDist = (left->position(deg) + right->position(deg))/2;
+      currDist = (leftDB->position(deg) + rightDB->position(deg))/2;
       
       error = (startDist + dist) - currDist;
       pctError = error / totalError * 100;
@@ -294,11 +294,11 @@ void chassis::driveFwd( double dist, double maxVel, double minVel, int breakoutC
       toPower = anglePID.calculate( pctError );
       
       // debugging purposes - uncomment below if needed
-      //printf("currROT: %.2f, targetROT(lower): %.2f, (upper): %.2f, --%i \n" , (left->position(deg) + right->position(deg))/2, startDist+dist-tolBound, startDist+dist+tolBound, breakout);
+      //printf("currROT: %.2f, targetROT(lower): %.2f, (upper): %.2f, --%i \n" , (leftDB->position(deg) + rightDB->position(deg))/2, startDist+dist-tolBound, startDist+dist+tolBound, breakout);
       //printf("Point turn --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
 
-      left->spin( fwd, toPower, velocityUnits::pct );
-      right->spin( fwd, toPower, velocityUnits::pct );
+      leftDB->spin( fwd, toPower, velocityUnits::pct );
+      rightDB->spin( fwd, toPower, velocityUnits::pct );
 
       task::sleep( 1000 / update_hz );
 
@@ -307,8 +307,8 @@ void chassis::driveFwd( double dist, double maxVel, double minVel, int breakoutC
     }
   }
 
-  left->stop();
-  right->stop();
+  leftDB->stop();
+  rightDB->stop();
   return;
 }
 
@@ -319,7 +319,7 @@ void chassis::driveAccel( double dist, double vel, double accelPeriod, double mi
   double tolBound = 10; 
   int breakout = 0;
   
-  double startDist = (left->position(deg) + right->position(deg))/2;     // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running 
+  double startDist = (leftDB->position(deg) + rightDB->position(deg))/2;     // initialize current angle variable - FYI, pre-initalization makes the code slightly faster when running 
   double currDist = 0;                                                   // initialize Encoder holder variable                            
   double totalError = fabs( dist );                                      // initialize absolute total error of manuever
   double error = dist;                                                   // initialize error
@@ -333,7 +333,7 @@ void chassis::driveAccel( double dist, double vel, double accelPeriod, double mi
     
     }
     else{       // dist will use degrees
-      currDist = (left->position(degrees) + right->position(degrees))/2;    // grabs current position 
+      currDist = (leftDB->position(degrees) + rightDB->position(degrees))/2;    // grabs current position 
       error =  (startDist + dist) - currDist;                   // grabs current error
       pctError = error / totalError * 100;          // calculate percent error of manuever (0 = end, 100 = beginning, 
 
@@ -350,8 +350,8 @@ void chassis::driveAccel( double dist, double vel, double accelPeriod, double mi
       // uncomment statement below to debug
       //printf("target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
       
-      left->spin(fwd, toPower, velocityUnits::pct);   // spin the motor (using voltage)
-      right->spin(fwd, toPower, velocityUnits::pct);   // spin the motor (using voltage)
+      leftDB->spin(fwd, toPower, velocityUnits::pct);   // spin the motor (using voltage)
+      rightDB->spin(fwd, toPower, velocityUnits::pct);   // spin the motor (using voltage)
 
       task::sleep(1000/update_hz); // required, need to sleep the task for a bit - otherwise you will get multi-threading scheduling errors (if multi-threading)
 
@@ -360,8 +360,8 @@ void chassis::driveAccel( double dist, double vel, double accelPeriod, double mi
     }
   }
 
-  left->stop();
-  right->stop();
+  leftDB->stop();
+  rightDB->stop();
   return;
 }
 
@@ -392,8 +392,8 @@ void chassis::pointTurn( double angle, double vel, double minVel, int breakoutCo
     //printf("currROT: %.2f, targetROT(lower): %.2f, (upper): %.2f \n" , IMU->rotation( degrees ), startAngle+angle-tolBound, startAngle+angle+tolBound);
     //printf("Point turn --- target: %f \t Error: %f \t pctError: %f \t toPower: %f \n", currAngle, error, pctError, toPower);
 
-    left->spin( fwd, toPower, velocityUnits::pct );
-    right->spin( reverse, toPower, velocityUnits::pct );
+    leftDB->spin( fwd, toPower, velocityUnits::pct );
+    rightDB->spin( reverse, toPower, velocityUnits::pct );
 
     task::sleep( 1000 / update_hz );
 
@@ -403,25 +403,46 @@ void chassis::pointTurn( double angle, double vel, double minVel, int breakoutCo
     else { breakout = 0; }
   }
 
-  left->stop();
-  right->stop();
+  leftDB->stop();
+  rightDB->stop();
   return;
 }
 
 
-void chassis::swingTurn( double rVel, double lVel, int runTime_ms){ // Example of a differential swing turn, default units for time is ms - change velocity for response.
-  int elapsedTime = 0;
- 
-  do{
-    right->spin( fwd, rVel, velocityUnits::pct );
-    left->spin( fwd, lVel, velocityUnits::pct );
-    task::sleep( 1000/ updateRate );
-    elapsedTime += 1000/updateRate;
-  }
-  while (elapsedTime < runTime_ms);
+void chassis::swingTurn( turnType dir, double toTic, double vel ){ // Example of a differential swing turn, default units for is motor 
+  double ticSum;   // initialize counter
+  vel = fabs(vel); // makes positive velocity standard
 
- left->stop();
- right->stop();
+  if (dir == left) {
+    double startTic = rightDB->position(deg);
+    if (!signbit(toTic)){ // positive
+      rightDB->spin( fwd, vel, velocityUnits::pct );
+      leftDB->stop();
+    }
+    else { //negative
+      rightDB->spin( reverse, vel, velocityUnits::pct );
+      leftDB->stop();
+      }
+    }
+    while (ticSum < startTic + toTic) { ticSum = rightDB->position(deg); }
+  }
+  else if (dir == right) {
+     double startTic = leftDB->position(deg);
+    if (!signbit(toTic)){ // positive
+      leftDB->spin( fwd, vel, velocityUnits::pct );
+      rightDB->stop();
+    }
+    else { //negative
+      leftDB->spin( reverse, vel, velocityUnits::pct );
+      rightDB->stop();
+      }
+    }
+    while (ticSum < startTic + toTic) { ticSum = leftDB->position(deg); }
+  }
+  else { return; }
+
+ leftDB->stop();
+ rightDB->stop();
  return;
 }
 
@@ -441,8 +462,8 @@ void chassis::arcadeDrive( controller *Controller, float deadband ) {
   if (outputR > 1)       { outputR = 1.0; }
   else if (outputR < -1) { outputR = -1.0; }
  
-  left->spin(fwd, 12*outputL, volt);
-  right->spin(fwd, 12*outputR, volt);
+  leftDB->spin(fwd, 12*outputL, volt);
+  rightDB->spin(fwd, 12*outputR, volt);
 }
 
 void chassis::arcadeDrive( controller *Controller, float spline, float deadband ){ // accel curve code (spline < .50 = decel response, .50 = linear response, > .50 = accel response)
@@ -463,8 +484,8 @@ void chassis::arcadeDrive( controller *Controller, float spline, float deadband 
   if (outputR > 1)       { outputR = 1.0; }
   else if (outputR < -1) { outputR = -1.0; }
  
-  left->spin(fwd, 12*outputL, volt);
-  right->spin(fwd, 12*outputR, volt);
+  leftDB->spin(fwd, 12*outputL, volt);
+  rightDB->spin(fwd, 12*outputR, volt);
 }
 
 void chassis::tankDrive( controller *Controller, float deadband) {
@@ -473,8 +494,8 @@ void chassis::tankDrive( controller *Controller, float deadband) {
   else { throttleL = 0; }
   if ( fabs(Controller->Axis2.value()) >= deadband ) { throttleR = Controller->Axis2.value()/100; }
   else { throttleR = 0; }
-  left->spin(fwd, 12*throttleL, volt);
-  right->spin(fwd, 12*throttleR, volt);
+  leftDB->spin(fwd, 12*throttleL, volt);
+  rightDB->spin(fwd, 12*throttleR, volt);
 }
 
 /*
