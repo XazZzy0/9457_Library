@@ -27,7 +27,7 @@ by the REC Foundation student-centered rules:
  
 -----------------------------------------------------------------------------------------------------------------------------
 
-
+--- A Personal Rant ---
 As a older member of the VEX community, I do not approve of the stance that competition robotics has taken with the "plug and play" 
 open-source libraries teams provide and I believe it goes against the student-centered policies (especially since many other students 
 cannot write these functions themselves, demonstrate the concepts, or even provide a proper reason as to why they would use someone 
@@ -40,9 +40,7 @@ is removed. Their usage without citation and proper understanding is blatent pla
 As a result, these libraries devalue the time, effort, and experience that many other very talented students have put into their own closed-source libraries which made them stand out.
 
 Continuing, while yes, this is technically a library itself, this is (and always will be) written as more of a wiki (similar to the VexU Sigbots) to properly document, provide resources, 
-explain the concepts, and verify it works so I may better mentor my students through something that is known to be difficult. Hence, this is given as a line by line general use-case 
+explain the concepts, and verify it works, so I may better mentor my students through something that is known to be difficult. Hence, this is given as a line by line general use-case 
 and is fully commented so ANY student may reverse engineer and better understand the process workflow + math for these technical concepts. 
 
 Trial by fire sucks, and nobody is an expert when they first start - so, sometimes it is best to work from an example and deconstruct the solution.
-
-~ Signed by: Jacob Wood [2025-02-11 : 14:57], Change Rev: Update README.md 
