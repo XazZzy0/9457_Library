@@ -24,6 +24,11 @@ by the REC Foundation student-centered rules:
 
  - https://kb.roboticseducation.org/hc/en-us/articles/5449868745367-Student-Centered-Policy 
  - https://www.vexforum.com/t/code-templates-and-student-centered-policy-discussion/115567/15
+
+All public resources for student can either be found commented in the code or within this documentation wiki (See Below). Please use
+this as your first source of reference before coming straight to me with trouble shooting issues. I will give you the tools and resources
+but it is up to you to problem solve.
+- https://xazzzy0.github.io/9457_Library/
  
 -----------------------------------------------------------------------------------------------------------------------------
 
