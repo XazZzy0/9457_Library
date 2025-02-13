@@ -2,7 +2,7 @@
 
 --- EVERYONE: ---
 
-This codebase is for reference only since it has been written by "Adults", per VEX Ruling.
+This codebase is for reference only since it has been written by "Adults", per the REC Foundation Ruling.
 - Direct use of the code provided during a competition is not allowed!!!
 
 If used/distributed by the students (such as copy and pasting), the decision is not supported by the 
