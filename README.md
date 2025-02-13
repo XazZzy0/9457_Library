@@ -1,6 +1,6 @@
 ![image](https://github.com/user-attachments/assets/d1efa1b0-7bf6-4df5-b4d3-a61da0be6b11)
 
---- EVERYONE: ---
+## For East Students
 
 This code repository is for reference only since it has been written by "Adults", per the REC Foundation Ruling.
 
@@ -30,9 +30,8 @@ this as your first source of reference before coming to the coaches with trouble
 but it is up to you to figure out how to use them.
 - https://xazzzy0.github.io/9457_Library/
  
------------------------------------------------------------------------------------------------------------------------------
 
---- A Personal Rant ---
+## A Personal Rant 
 
 I do not approve of the stance that competition robotics has taken with the "plug and play" 
 open-source libraries teams provide, and I believe it goes against the student-centered policies, especially since many other students 
