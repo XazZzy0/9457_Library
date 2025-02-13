@@ -2,8 +2,8 @@
 
 --- EVERYONE: ---
 
-This codebase is for reference only since it has been written by "Adults", per VEX Ruling, 
-direct use of the code provided during a competition is not allowed!!!
+This codebase is for reference only since it has been written by "Adults", per VEX Ruling.
+- Direct use of the code provided during a competition is not allowed!!!
 
 If used/distributed by the students (such as copy and pasting), the decision is not supported by the 
 coaches or our organization. The student takes full responsibility for any punishment that may occur 
