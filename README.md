@@ -28,6 +28,7 @@ by the REC Foundation student-centered rules:
 -----------------------------------------------------------------------------------------------------------------------------
 
 --- A Personal Rant ---
+
 As a older member of the VEX community, I do not approve of the stance that competition robotics has taken with the "plug and play" 
 open-source libraries teams provide and I believe it goes against the student-centered policies (especially since many other students 
 cannot write these functions themselves, demonstrate the concepts, or even provide a proper reason as to why they would use someone 
