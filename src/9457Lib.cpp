@@ -338,7 +338,7 @@ void chassis::driveAccel( double dist, double vel, double accelPeriod, double mi
       pctError = error / totalError * 100;          // calculate percent error of manuever (0 = end, 100 = beginning, 
 
       if (100 - fabs(pctError) <= accelPeriod) { // Acceleration Period
-        if (pctError > 0){ // fwd
+        if (!signbit(pctError)){ // fwd
           toPower = ((100-fabs(pctError))/accelPeriod) * (vel-minVel) + minVel; // kickstart the Accel/PID at minVel (fwd)
         }
         else { // rev
@@ -447,7 +447,7 @@ void chassis::swingTurn( turnType dir, double toTic, double vel, bool waitForCom
 }
 
 
-void chassis::arcadeDrive( controller *Controller, float deadband ) {
+void chassis::arcadeDrive( controller *Controller, float deadband ) { // Standard Arcade Drive
   float throttle, turn, outputL, outputR;
   if ( fabs(Controller->Axis3.position()) >= deadband ) { throttle = Controller->Axis3.position()/100.0; }
   else { throttle = 0; }
@@ -462,8 +462,13 @@ void chassis::arcadeDrive( controller *Controller, float deadband ) {
   if (outputR > 1)       { outputR = 1.0; }
   else if (outputR < -1) { outputR = -1.0; }
  
-  leftDB->spin(fwd, 12*outputL, volt);
-  rightDB->spin(fwd, 12*outputR, volt);
+  if( fabs(Controller->Axis3.position()) >= deadband || fabs(Controller->Axis1.position()) >= deadband ){
+     leftDB->spin(fwd, 12*outputL, volt);
+     rightDB->spin(fwd, 12*outputR, volt); 
+  } else {
+    leftDB->stop();
+    rightDB->stop(); 
+  }
 }
 
 void chassis::arcadeDrive( controller *Controller, float spline, float deadband ){ // accel curve code (spline < .50 = decel response, .50 = linear response, > .50 = accel response)
@@ -475,25 +480,36 @@ void chassis::arcadeDrive( controller *Controller, float spline, float deadband 
   else { turn = 0; }
    
   float newTurn = pow(1-turn,2)*startY + (1-turn)*turn*spline + pow(turn, 2)*endY;
- 
-  outputL = throttle + newTurn;
-  outputR = throttle - newTurn;
 
-  if (outputL > 1)       { outputL = 1.0; }
-  else if (outputL < -1) { outputL = -1.0; }
-  if (outputR > 1)       { outputR = 1.0; }
-  else if (outputR < -1) { outputR = -1.0; }
- 
-  leftDB->spin(fwd, 12*outputL, volt);
-  rightDB->spin(fwd, 12*outputR, volt);
+  if (!signbit(Controller->Axis1.position())){
+    outputL = throttle + newTurn;
+    outputR = throttle - newTurn;
+  } else {
+    outputL = throttle - newTurn;
+    outputR = throttle + newTurn;
+  }
+  
+
+  if (outputL > 1.0)       { outputL = 1.0; }
+  else if (outputL < -1.0) { outputL = -1.0; }
+  if (outputR > 1.0)       { outputR = 1.0; }
+  else if (outputR < -1.0) { outputR = -1.0; }
+
+  if( fabs(Controller->Axis3.position()) >= deadband || fabs(Controller->Axis1.position()) >= deadband ){
+     leftDB->spin(fwd, 12*outputL, volt);
+     rightDB->spin(fwd, 12*outputR, volt); 
+  } else {
+    leftDB->stop();
+    rightDB->stop(); 
+  }
 }
 
 void chassis::tankDrive( controller *Controller, float deadband) {
   float throttleL, throttleR;
   if ( fabs(Controller->Axis3.position()) >= deadband ) { throttleL = Controller->Axis3.position()/100; }
-  else { throttleL = 0; }
+  else { throttleL = 0.0; }
   if ( fabs(Controller->Axis2.position()) >= deadband ) { throttleR = Controller->Axis2.position()/100; }
-  else { throttleR = 0; }
+  else { throttleR = 0.0; }
   leftDB->spin(fwd, 12*throttleL, volt);
   rightDB->spin(fwd, 12*throttleR, volt);
 }
@@ -712,7 +728,7 @@ void controlMotor::pidAccel( double target, double maxVel, double minVel, double
       pctError = error / totalError * 100;          // calculate percent error of manuever (0 = end, 100 = beginning, 
 
       if (100 - fabs(pctError) <= accelPeriod) { // Acceleration Period
-        if (pctError > 0){ // fwd
+        if (!signbit(pctError)){ // fwd
           toPower = ((100-fabs(pctError))/accelPeriod) * (maxVel-minVel) + minVel; // kickstart the Accel/PID at minVel (fwd)
         }
         else { // rev
@@ -745,7 +761,7 @@ void controlMotor::pidAccel( double target, double maxVel, double minVel, double
       pctError = error / totalError * 100;          // calculate percent error of manuever (0 = end, 100 = beginning, 
 
       if (100 - fabs(pctError) <= accelPeriod) { // Acceleration Period
-        if (pctError > 0){ // fwd
+        if (!signbit(pctError)){ // fwd
           toPower = ((100-fabs(pctError))/accelPeriod) * (maxVel-minVel) + minVel; // kickstart the Accel/PID at minVel (fwd)
         }
         else { // rev
@@ -776,7 +792,7 @@ void controlMotor::pidAccel( double target, double maxVel, double minVel, double
       pctError = error / totalError * 100;          // calculate percent error of manuever (0 = end, 100 = beginning, 
 
       if (100 - fabs(pctError) <= accelPeriod) { // Acceleration Period
-        if (pctError > 0){ // fwd
+        if (!signbit(pctError)){ // fwd
           toPower = ((100-fabs(pctError))/accelPeriod) * (maxVel-minVel) + minVel; // kickstart the Accel/PID at minVel (fwd)
         }
         else { // rev
@@ -807,7 +823,7 @@ void controlMotor::pidAccel( double target, double maxVel, double minVel, double
       pctError = error / totalError * 100;          // calculate percent error of manuever (0 = end, 100 = beginning, 
 
       if (100 - fabs(pctError) <= accelPeriod) { // Acceleration Period
-        if (pctError > 0){ // fwd
+        if (!signbit(pctError)){ // fwd
           toPower = ((100-fabs(pctError))/accelPeriod) * (maxVel-minVel) + minVel; // kickstart the Accel/PID at minVel (fwd)
         }
         else { // rev
