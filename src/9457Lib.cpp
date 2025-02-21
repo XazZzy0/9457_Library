@@ -413,7 +413,7 @@ void chassis::swingTurn( turnType dir, double toTic, double vel, bool waitForCom
   double ticSum;   // initialize counter
   vel = fabs(vel); // makes positive velocity standard
 
-  if (dir == left) {
+  if (dir == turnType::left) {
     double startTic = rightDB->position(deg);
     if (!signbit(toTic)){ // positive
       rightDB->spin( fwd, vel, velocityUnits::pct );
@@ -426,7 +426,7 @@ void chassis::swingTurn( turnType dir, double toTic, double vel, bool waitForCom
     }
     while (ticSum < startTic + toTic) { ticSum = rightDB->position(deg); }
   }
-  else if (dir == right) {
+  else if (dir == turnType::right) {
      double startTic = leftDB->position(deg);
     if (!signbit(toTic)){ // positive
       leftDB->spin( fwd, vel, velocityUnits::pct );
@@ -449,9 +449,9 @@ void chassis::swingTurn( turnType dir, double toTic, double vel, bool waitForCom
 
 void chassis::arcadeDrive( controller *Controller, float deadband ) {
   float throttle, turn, outputL, outputR;
-  if ( fabs(Controller->Axis3.value()) >= deadband ) { throttle = Controller->Axis3.value()/100; }
+  if ( fabs(Controller->Axis3.position()) >= deadband ) { throttle = Controller->Axis3.position()/100.0; }
   else { throttle = 0; }
-  if ( fabs(Controller->Axis1.value()) >= deadband ) { turn = Controller->Axis1.value()/100; }
+  if ( fabs(Controller->Axis1.position()) >= deadband ) { turn = Controller->Axis1.position()/100.0; }
   else { turn = 0; }
 
   outputL = throttle + turn;
@@ -469,9 +469,9 @@ void chassis::arcadeDrive( controller *Controller, float deadband ) {
 void chassis::arcadeDrive( controller *Controller, float spline, float deadband ){ // accel curve code (spline < .50 = decel response, .50 = linear response, > .50 = accel response)
   float startY = 0, endY = 1; 
   float throttle, turn, outputL, outputR;
-  if ( fabs(Controller->Axis3.value()) >= deadband ) { throttle = Controller->Axis3.value()/100; }
+  if ( fabs(Controller->Axis3.position()) >= deadband ) { throttle = Controller->Axis3.position()/100.0; }
   else { throttle = 0; }
-  if ( fabs(Controller->Axis1.value()) >= deadband ) { turn = Controller->Axis1.value()/100; }
+  if ( fabs(Controller->Axis1.position()) >= deadband ) { turn = Controller->Axis1.position()/100.0; }
   else { turn = 0; }
    
   float newTurn = pow(1-turn,2)*startY + (1-turn)*turn*spline + pow(turn, 2)*endY;
@@ -490,9 +490,9 @@ void chassis::arcadeDrive( controller *Controller, float spline, float deadband 
 
 void chassis::tankDrive( controller *Controller, float deadband) {
   float throttleL, throttleR;
-  if ( fabs(Controller->Axis3.value()) >= deadband ) { throttleL = Controller->Axis3.value()/100; }
+  if ( fabs(Controller->Axis3.position()) >= deadband ) { throttleL = Controller->Axis3.position()/100; }
   else { throttleL = 0; }
-  if ( fabs(Controller->Axis2.value()) >= deadband ) { throttleR = Controller->Axis2.value()/100; }
+  if ( fabs(Controller->Axis2.position()) >= deadband ) { throttleR = Controller->Axis2.position()/100; }
   else { throttleR = 0; }
   leftDB->spin(fwd, 12*throttleL, volt);
   rightDB->spin(fwd, 12*throttleR, volt);
