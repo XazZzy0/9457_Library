@@ -4,7 +4,7 @@
 
 This code repository is for reference only since it has been written by "Adults", per the REC Foundation Ruling.
 
-Direct use of the code provided during a competition is not allowed!!! If used/distributed by the students (such as copying and pasting),
+**Direct use of the code provided during a competition is not allowed!!!** If used/distributed by the students (such as copying and pasting),
 the decision is not supported by the coaches or our organization. The student takes full responsibility for any punishment that may occur 
 proceeding such an instance.
 
@@ -31,24 +31,23 @@ but it is up to you to figure out how to use them.
 - https://xazzzy0.github.io/9457_Library/
  
 
-## A Personal Rant 
+## A Personal Rant  
 
-I do not approve of the stance that competition robotics has taken with the "plug-and-play" 
-open-source libraries teams provide, and I believe it goes against the student-centered policies, especially since many other students 
-cannot write these functions themselves, demonstrate the concepts, or even provide proper reasoning as to why they would start using 
-someone else's library.
+I do not approve of the stance that competition robotics has taken with the "plug-and-play"  open-source code libraries that other teams provide, and I believe it goes against the student-centered policies, especially since many other students 
+cannot write these functions themselves, demonstrate the concepts, or even provide proper reasoning as to why they would start using someone else's library.
 
 See below for the REC ruling 
 - "Students use a custom library developed by another team, but cannot create their own custom libraries." 
 
-For clarity, libraries are not bad, in fact I believe quite the opposite. But, as someone with many years of design experience in engineering competitions, the purpose of VEX is to inspire, 
-grow, and learn. With these libraries, the inspiration and potential for growth is removed. Their usage without citation and proper understanding is blatant plagiarism, 
-especially in a competition environment where trophies may be awarded on perceived "skill".  As a result, these libraries devalue the time, effort, and experience that many 
-other very talented students have put into their own closed-source libraries which made them stand out.
+I fully comprehend VEX's stance on the matter and the difficulty in arbitrating any policy that enforces a more thorough ruling, but this creates an issue that relies solely on student honesty, which at a top level (at Worlds) has already 
+proven to have many issues. 
 
-Continuing, while yes, this is technically a library itself, this is (and always will be) written as more of a wiki/forum (similar to the VexU Sigbots) to properly document, provide resources, 
-explain the concepts, and verify these methods work. With this, I may better mentor all of my students through something that is known to be difficult. Hence, the reasoning as to why the code is given as a line-by-line
-general use case. I want you to learn, so it is fully commented so ANYBODY can reverse engineer and better understand the process workflow + math for these technical concepts.
+For clarity, My argument is not that libraries are bad. In fact, I believe quite the opposite. My concern on this subject will always be any student's potential for growth. As someone who's had exposure to many years of engineering competitions across different fields, 
+the purpose of any engineering competition has always been to inspire, grow, and learn skills and concepts from a fundamental level. With these libraries, the inspiration and potential for growth are removed. Their usage without citation and proper understanding is blatant plagiarism, especially in a competition environment where trophies may be awarded on perceived "skill".  As a result, these libraries devalue the time, effort, and experience that many 
+other very talented students have put into their own closed-source libraries, which made them stand out. 
+
+Continuing, while yes, this codebase is technically a library itself - it will only be for referece. The repository and the website is (and always will be) written in the format of a wiki (similar to the VexU Sigbots) to properly document, provide resources, 
+explain the concepts, and verify these methods work. With this, I may better mentor all of my students through something that is known to be difficult. I want you to learn, so it is fully commented so ANYBODY can reverse engineer and better understand the process workflow + math for these technical concepts.
 
 The trial-by-fire mentality sucks, and a fundamental lack of understanding is expected when you first start - Do everything properly, by putting in the TIME and EFFORT, and that will always be your roadmap to success.
 Take pride in yourself and your team, and on a final note, the best piece of engineering advice I have ever received is: "If you look at something long enough, you will figure it out".
