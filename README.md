@@ -4,12 +4,12 @@
 
 This code repository is for reference only since it has been written by "Adults", per the REC Foundation Ruling.
 
-**Direct use of the code provided during a competition is not allowed!!!** If used/distributed by the students (such as copying and pasting),
-the decision is not supported by the coaches or our organization. The student takes full responsibility for any punishment that may occur 
+**Direct use of the code provided during a competition is absolutely not allowed!!!** If used/distributed by the students (such as through copying and pasting),
+the decision is not supported by the coaches or our organization. The student takes full responsibility for any internal and external punishment that will occur 
 proceeding such an instance.
 
-This code is not to be distributed as a general use-case library. Its purpose is to demonstrate how to apply code to theory for students who are
-unfamiliar with the process workflow. Additionally, this provides a learning opportunity for them to get into higher-level engineering/software concepts such as:
+The purpose of this codebase is to demonstrate how to apply theory into code for students who are unfamiliar with the process workflow and/or concepts.
+This provides a guarenteed learning opportunity for them to get into higher-level engineering/software concepts such as:
  - Object Oriented Programming
  - Reference/Pointer operation
  - Custom library creation
@@ -26,16 +26,20 @@ by the REC Foundation student-centered rules:
  - https://www.vexforum.com/t/code-templates-and-student-centered-policy-discussion/115567/15
 
 All public resources for students can either be found commented within the code or within this wiki link (See Below). Please use
-this as your first source of reference before coming to the coaches with troubleshooting issues. I will give you the tools and resources
-but it is up to you to figure out how to use them.
+this as your first source of reference before coming to the coaches with troubleshooting issues. Us coaches will be very hands off! 
+I will give you all the tools and resources but it is up to you to figure out how to use them!
 - https://xazzzy0.github.io/9457_Library/
 
 ## My Pledge
-I'll always mentor my students to do everything properly and will always **prove** that by putting in the TIME and EFFORT, it'll always be the roadmap to success. All information given **WILL ONLY** to only be used for student referece. The repository and the website is (and always will be) written in the format of a wiki (similar to the VexU Sigbots) to properly document, provide resources, explain the concepts, and verify these methods work. With this, I may better mentor all of my students through something that is known to be difficult. I want you to learn, so it is fully commented so ANYBODY can reverse engineer and better understand the process workflow + math for these technical concepts.
+I'll always mentor my students to do everything properly and will always **prove** that by putting in the TIME and EFFORT, it'll always be the roadmap to success. All information given **WILL ONLY** be used for student reference. The repository and the website provided is (and always will be) written in the format of a education wiki (just like the BLRS Wiki) to properly document, provide resources, explain the concepts, and verify these methods work. With this, I may better mentor all of my students through something that is known to be difficult. Everything provided is fully commented/explained so ANYBODY can reverse engineer and better understand the process workflow + math for these technical concepts. 
 
-For those students reading: The trial-by-fire mentality sucks, and a fundamental lack of understanding is expected when you first start. Take pride in yourself, your team, and give it your all. 
+Remember: The best engineering advice I have ever received is: "If you look at something long enough, you will figure it out".
 
-On one final note, the best piece of engineering advice I have ever received is: "If you look at something long enough, you will figure it out".
+For those students reading: 
+History has proven time and time again that a complete and thorough understanding of any topic leads to the next wave of innovators. 
+The trial-by-fire mentality sucks, and a fundamental lack of understanding is expected when you first start. Never be embarrassed with technical ignorance and don't be afraid to question everything. After all, The expert was once the apprentice...
+
+On one final note: Always take pride in yourself, your efforts, and your team, since it is your mark in this program.
 
 ## A Personal Rant
 
