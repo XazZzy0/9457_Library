@@ -49,7 +49,7 @@ On one final note: Always take pride in yourself, your efforts, and your team, s
 I do not approve of the stance that competition robotics has taken with the "plug-and-play"  open-source code libraries that other teams provide, and I believe it goes against the student-centered policies, especially since many other students 
 cannot write these functions themselves, demonstrate the concepts, or even provide proper reasoning as to why they would start using someone else's library.
 
-See below for the REC ruling 
+**See below for the REC ruling**
 - "Students use a custom library developed by another team, but cannot create their own custom libraries." 
 
 I fully comprehend VEX's stance on the matter and the difficulty in arbitrating any policy that enforces a more thorough ruling, but this creates an issue that relies solely on student honesty, which at a top level (at Worlds) has already 
