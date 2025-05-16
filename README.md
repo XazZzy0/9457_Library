@@ -29,9 +29,15 @@ All public resources for students can either be found commented within the code 
 this as your first source of reference before coming to the coaches with troubleshooting issues. I will give you the tools and resources
 but it is up to you to figure out how to use them.
 - https://xazzzy0.github.io/9457_Library/
- 
 
-## A Personal Rant  
+## My Pledge
+I'll always mentor my students to do everything properly and will always **prove** that by putting in the TIME and EFFORT, it'll always be the roadmap to success. All information given **WILL ONLY** to only be used for student referece. The repository and the website is (and always will be) written in the format of a wiki (similar to the VexU Sigbots) to properly document, provide resources, explain the concepts, and verify these methods work. With this, I may better mentor all of my students through something that is known to be difficult. I want you to learn, so it is fully commented so ANYBODY can reverse engineer and better understand the process workflow + math for these technical concepts.
+
+For those students reading: The trial-by-fire mentality sucks, and a fundamental lack of understanding is expected when you first start. Take pride in yourself, your team, and give it your all. 
+
+On one final note, the best piece of engineering advice I have ever received is: "If you look at something long enough, you will figure it out".
+
+## A Personal Rant
 
 I do not approve of the stance that competition robotics has taken with the "plug-and-play"  open-source code libraries that other teams provide, and I believe it goes against the student-centered policies, especially since many other students 
 cannot write these functions themselves, demonstrate the concepts, or even provide proper reasoning as to why they would start using someone else's library.
@@ -45,9 +51,3 @@ proven to have many issues.
 For clarity, My argument is not that libraries are bad. In fact, I believe quite the opposite. My concern on this subject will always be any student's potential for growth. As someone who's had exposure to many years of engineering competitions across different fields, 
 the purpose of any engineering competition has always been to inspire, grow, and learn skills and concepts from a fundamental level. With these libraries, the inspiration and potential for growth are removed. Their usage without citation and proper understanding is blatant plagiarism, especially in a competition environment where trophies may be awarded on perceived "skill".  As a result, these libraries devalue the time, effort, and experience that many 
 other very talented students have put into their own closed-source libraries, which made them stand out. 
-
-Continuing, while yes, this codebase is technically a library itself - it will only be for referece. The repository and the website is (and always will be) written in the format of a wiki (similar to the VexU Sigbots) to properly document, provide resources, 
-explain the concepts, and verify these methods work. With this, I may better mentor all of my students through something that is known to be difficult. I want you to learn, so it is fully commented so ANYBODY can reverse engineer and better understand the process workflow + math for these technical concepts.
-
-The trial-by-fire mentality sucks, and a fundamental lack of understanding is expected when you first start - Do everything properly, by putting in the TIME and EFFORT, and that will always be your roadmap to success.
-Take pride in yourself and your team, and on a final note, the best piece of engineering advice I have ever received is: "If you look at something long enough, you will figure it out".
